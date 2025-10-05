@@ -79,7 +79,138 @@
   </div>
 
  <script>
+const SHEET_URL = "<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Form Kirim ke Google Sheet</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f8fafc;
+      margin: 0;
+      padding: 40px;
+      display: flex;
+      justify-content: center;
+    }
+    .form-card {
+      background: white;
+      padding: 30px 40px;
+      border-radius: 16px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      width: 100%;
+      max-width: 420px;
+    }
+    h2 {
+      text-align: center;
+      color: #222;
+    }
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+    input, textarea {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+    button {
+      width: 100%;
+      margin-top: 20px;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      background: #2563eb;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    button:disabled {
+      background: #93c5fd;
+      cursor: not-allowed;
+    }
+    #status {
+      text-align: center;
+      margin-top: 15px;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <div class="form-card">
+    <h2>Formulir Komentar</h2>
+
+    <label>Nama</label>
+    <input type="text" id="nama" placeholder="Masukkan nama Anda">
+
+    <label>Email</label>
+    <input type="email" id="email" placeholder="contoh@email.com">
+
+    <label>Komentar</label>
+    <textarea id="komentar" rows="4" placeholder="Tulis komentar Anda..."></textarea>
+
+    <button id="btnSubmit">Kirim</button>
+
+    <p id="status"></p>
+  </div>
+
+ <script>
 const SHEET_URL = "https://script.google.com/macros/s/AKfycbz-FwUchXaJ_LOt2FG9nDnU7EqLxaCccW6zJ8pYyoFlvEWKoWVktev1fhO4XAqnv0X_rQ/exec"; // tempel URL /exec yang baru
+
+const btn = document.getElementById("btnSubmit");
+const statusEl = document.getElementById("status");
+
+btn.addEventListener("click", async () => {
+  const nama = document.getElementById("nama").value.trim();
+  const email = document.getElementById("email").value.trim();
+  const komentar = document.getElementById("komentar").value.trim();
+
+  if (!nama || !email || !komentar) {
+    statusEl.textContent = "⚠️ Harap isi semua kolom.";
+    statusEl.style.color = "#dc2626";
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = "Mengirim...";
+  statusEl.textContent = "";
+
+  try {
+    const response = await fetch(SHEET_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ nama, email, komentar })
+    });
+
+    const result = await response.json(); // Sekarang bisa dibaca!
+
+    if (result.status === "OK") {
+      statusEl.textContent = "✅ " + result.message;
+      statusEl.style.color = "#16a34a";
+      document.getElementById("nama").value = "";
+      document.getElementById("email").value = "";
+      document.getElementById("komentar").value = "";
+    } else {
+      statusEl.textContent = "❌ " + result.message;
+      statusEl.style.color = "#dc2626";
+    }
+
+  } catch (err) {
+    statusEl.textContent = "❌ Gagal koneksi: " + err.message;
+    statusEl.style.color = "#dc2626";
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "Kirim";
+  }
+});
+</script>
+</body>
+</html>"; // tempel URL /exec yang baru
 
 const btn = document.getElementById("btnSubmit");
 const statusEl = document.getElementById("status");
