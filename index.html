@@ -3,261 +3,128 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Form Kirim ke Google Sheet</title>
+  <title>Kirim Data ke Google Sheet</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: #f8fafc;
-      margin: 0;
-      padding: 40px;
-      display: flex;
-      justify-content: center;
+      margin: 30px;
+      background: #f5f5f5;
+      color: #333;
     }
-    .form-card {
-      background: white;
-      padding: 30px 40px;
-      border-radius: 16px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-      width: 100%;
-      max-width: 420px;
-    }
-    h2 {
+    h1 {
       text-align: center;
       color: #222;
     }
+    form {
+      background: #fff;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      max-width: 400px;
+      margin: auto;
+    }
     label {
       display: block;
-      margin-top: 15px;
+      margin-top: 10px;
       font-weight: bold;
     }
     input, textarea {
       width: 100%;
       padding: 10px;
       margin-top: 5px;
-      border: 1px solid #ccc;
       border-radius: 8px;
-      font-size: 14px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+      box-sizing: border-box;
     }
     button {
       width: 100%;
-      margin-top: 20px;
-      padding: 12px;
-      border: none;
-      border-radius: 8px;
       background: #2563eb;
       color: white;
-      font-weight: bold;
-      cursor: pointer;
+      border: none;
+      padding: 12px;
+      margin-top: 15px;
+      font-size: 16px;
+      border-radius: 8px;
     }
     button:disabled {
-      background: #93c5fd;
-      cursor: not-allowed;
+      background: #94a3b8;
     }
     #status {
       text-align: center;
       margin-top: 15px;
-      font-weight: 600;
+      font-weight: bold;
     }
   </style>
 </head>
 <body>
-  <div class="form-card">
-    <h2>Formulir Komentar</h2>
 
+  <h1>Form Kirim ke Google Sheet</h1>
+
+  <form id="formData">
     <label>Nama</label>
-    <input type="text" id="nama" placeholder="Masukkan nama Anda">
+    <input type="text" id="nama" required>
 
     <label>Email</label>
-    <input type="email" id="email" placeholder="contoh@email.com">
+    <input type="email" id="email" required>
 
     <label>Komentar</label>
-    <textarea id="komentar" rows="4" placeholder="Tulis komentar Anda..."></textarea>
+    <textarea id="komentar" rows="3" required></textarea>
 
-    <button id="btnSubmit">Kirim</button>
+    <button type="button" id="btnSubmit">Kirim</button>
+  </form>
 
-    <p id="status"></p>
-  </div>
+  <p id="status"></p>
 
- <script>
-const SHEET_URL = "<!DOCTYPE html>
-<html lang="id">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Form Kirim ke Google Sheet</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f8fafc;
-      margin: 0;
-      padding: 40px;
-      display: flex;
-      justify-content: center;
-    }
-    .form-card {
-      background: white;
-      padding: 30px 40px;
-      border-radius: 16px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-      width: 100%;
-      max-width: 420px;
-    }
-    h2 {
-      text-align: center;
-      color: #222;
-    }
-    label {
-      display: block;
-      margin-top: 15px;
-      font-weight: bold;
-    }
-    input, textarea {
-      width: 100%;
-      padding: 10px;
-      margin-top: 5px;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      font-size: 14px;
-    }
-    button {
-      width: 100%;
-      margin-top: 20px;
-      padding: 12px;
-      border: none;
-      border-radius: 8px;
-      background: #2563eb;
-      color: white;
-      font-weight: bold;
-      cursor: pointer;
-    }
-    button:disabled {
-      background: #93c5fd;
-      cursor: not-allowed;
-    }
-    #status {
-      text-align: center;
-      margin-top: 15px;
-      font-weight: 600;
-    }
-  </style>
-</head>
-<body>
-  <div class="form-card">
-    <h2>Formulir Komentar</h2>
+  <script>
+    // 🔗 Ganti URL di bawah ini dengan URL Web App kamu (yang diakhiri /exec)
+    const SHEET_URL = "https://script.google.com/macros/s/AKfycbz-FwUchXaJ_LOt2FG9nDnU7EqLxaCccW6zJ8pYyoFlvEWKoWVktev1fhO4XAqnv0X_rQ/exec";
 
-    <label>Nama</label>
-    <input type="text" id="nama" placeholder="Masukkan nama Anda">
+    const btn = document.getElementById("btnSubmit");
+    const statusEl = document.getElementById("status");
 
-    <label>Email</label>
-    <input type="email" id="email" placeholder="contoh@email.com">
+    btn.addEventListener("click", async () => {
+      const nama = document.getElementById("nama").value.trim();
+      const email = document.getElementById("email").value.trim();
+      const komentar = document.getElementById("komentar").value.trim();
 
-    <label>Komentar</label>
-    <textarea id="komentar" rows="4" placeholder="Tulis komentar Anda..."></textarea>
+      if (!nama || !email || !komentar) {
+        statusEl.textContent = "⚠️ Harap isi semua kolom.";
+        statusEl.style.color = "#dc2626";
+        return;
+      }
 
-    <button id="btnSubmit">Kirim</button>
+      btn.disabled = true;
+      btn.textContent = "Mengirim...";
+      statusEl.textContent = "";
 
-    <p id="status"></p>
-  </div>
+      try {
+        const response = await fetch(SHEET_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ nama, email, komentar })
+        });
 
- <script>
-const SHEET_URL = "https://script.google.com/macros/s/AKfycbz-FwUchXaJ_LOt2FG9nDnU7EqLxaCccW6zJ8pYyoFlvEWKoWVktev1fhO4XAqnv0X_rQ/exec"; // tempel URL /exec yang baru
+        const result = await response.json();
 
-const btn = document.getElementById("btnSubmit");
-const statusEl = document.getElementById("status");
+        if (result.status === "OK") {
+          statusEl.textContent = "✅ " + result.message;
+          statusEl.style.color = "#16a34a";
+          document.getElementById("formData").reset();
+        } else {
+          statusEl.textContent = "❌ " + result.message;
+          statusEl.style.color = "#dc2626";
+        }
 
-btn.addEventListener("click", async () => {
-  const nama = document.getElementById("nama").value.trim();
-  const email = document.getElementById("email").value.trim();
-  const komentar = document.getElementById("komentar").value.trim();
-
-  if (!nama || !email || !komentar) {
-    statusEl.textContent = "⚠️ Harap isi semua kolom.";
-    statusEl.style.color = "#dc2626";
-    return;
-  }
-
-  btn.disabled = true;
-  btn.textContent = "Mengirim...";
-  statusEl.textContent = "";
-
-  try {
-    const response = await fetch(SHEET_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ nama, email, komentar })
+      } catch (err) {
+        statusEl.textContent = "❌ Gagal koneksi: " + err.message;
+        statusEl.style.color = "#dc2626";
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Kirim";
+      }
     });
+  </script>
 
-    const result = await response.json(); // Sekarang bisa dibaca!
-
-    if (result.status === "OK") {
-      statusEl.textContent = "✅ " + result.message;
-      statusEl.style.color = "#16a34a";
-      document.getElementById("nama").value = "";
-      document.getElementById("email").value = "";
-      document.getElementById("komentar").value = "";
-    } else {
-      statusEl.textContent = "❌ " + result.message;
-      statusEl.style.color = "#dc2626";
-    }
-
-  } catch (err) {
-    statusEl.textContent = "❌ Gagal koneksi: " + err.message;
-    statusEl.style.color = "#dc2626";
-  } finally {
-    btn.disabled = false;
-    btn.textContent = "Kirim";
-  }
-});
-</script>
-</body>
-</html>"; // tempel URL /exec yang baru
-
-const btn = document.getElementById("btnSubmit");
-const statusEl = document.getElementById("status");
-
-btn.addEventListener("click", async () => {
-  const nama = document.getElementById("nama").value.trim();
-  const email = document.getElementById("email").value.trim();
-  const komentar = document.getElementById("komentar").value.trim();
-
-  if (!nama || !email || !komentar) {
-    statusEl.textContent = "⚠️ Harap isi semua kolom.";
-    statusEl.style.color = "#dc2626";
-    return;
-  }
-
-  btn.disabled = true;
-  btn.textContent = "Mengirim...";
-  statusEl.textContent = "";
-
-  try {
-    const response = await fetch(SHEET_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ nama, email, komentar })
-    });
-
-    const result = await response.json(); // Sekarang bisa dibaca!
-
-    if (result.status === "OK") {
-      statusEl.textContent = "✅ " + result.message;
-      statusEl.style.color = "#16a34a";
-      document.getElementById("nama").value = "";
-      document.getElementById("email").value = "";
-      document.getElementById("komentar").value = "";
-    } else {
-      statusEl.textContent = "❌ " + result.message;
-      statusEl.style.color = "#dc2626";
-    }
-
-  } catch (err) {
-    statusEl.textContent = "❌ Gagal koneksi: " + err.message;
-    statusEl.style.color = "#dc2626";
-  } finally {
-    btn.disabled = false;
-    btn.textContent = "Kirim";
-  }
-});
-</script>
 </body>
 </html>
