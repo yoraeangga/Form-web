@@ -3,128 +3,56 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Kirim Data ke Google Sheet</title>
+  <title>Form Kirim ke Google Sheet</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 30px;
-      background: #f5f5f5;
-      color: #333;
+    body { font-family: Arial, sans-serif; max-width: 400px; margin: 50px auto; }
+    label { display: block; margin-top: 10px; }
+    input, textarea, button {
+      width: 100%; padding: 8px; margin-top: 5px;
     }
-    h1 {
-      text-align: center;
-      color: #222;
-    }
-    form {
-      background: #fff;
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-      max-width: 400px;
-      margin: auto;
-    }
-    label {
-      display: block;
-      margin-top: 10px;
-      font-weight: bold;
-    }
-    input, textarea {
-      width: 100%;
-      padding: 10px;
-      margin-top: 5px;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-      font-size: 16px;
-      box-sizing: border-box;
-    }
-    button {
-      width: 100%;
-      background: #2563eb;
-      color: white;
-      border: none;
-      padding: 12px;
-      margin-top: 15px;
-      font-size: 16px;
-      border-radius: 8px;
-    }
-    button:disabled {
-      background: #94a3b8;
-    }
-    #status {
-      text-align: center;
-      margin-top: 15px;
-      font-weight: bold;
-    }
+    button { background: green; color: white; border: none; cursor: pointer; margin-top: 10px; }
   </style>
 </head>
 <body>
+  <h2>Form Kirim ke Google Sheet</h2>
 
-  <h1>Form Kirim ke Google Sheet</h1>
+  <label>Nama:</label>
+  <input type="text" id="nama">
 
-  <form id="formData">
-    <label>Nama</label>
-    <input type="text" id="nama" required>
+  <label>Email:</label>
+  <input type="email" id="email">
 
-    <label>Email</label>
-    <input type="email" id="email" required>
+  <label>Pesan:</label>
+  <textarea id="pesan"></textarea>
 
-    <label>Komentar</label>
-    <textarea id="komentar" rows="3" required></textarea>
-
-    <button type="button" id="btnSubmit">Kirim</button>
-  </form>
+  <button id="kirim">Kirim</button>
 
   <p id="status"></p>
 
   <script>
-    // 🔗 Ganti URL di bawah ini dengan URL Web App kamu (yang diakhiri /exec)
-    const SHEET_URL = "https://script.google.com/macros/s/AKfycbz-FwUchXaJ_LOt2FG9nDnU7EqLxaCccW6zJ8pYyoFlvEWKoWVktev1fhO4XAqnv0X_rQ/exec";
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzse_68vIKalKsWzE5fYyPzPCNm8mQ0gNEwzc0m7OW2O1BYOplkBOpoNmXVFbe78UY/exec";
 
-    const btn = document.getElementById("btnSubmit");
-    const statusEl = document.getElementById("status");
+    document.getElementById("kirim").addEventListener("click", async () => {
+      const data = {
+        nama: document.getElementById("nama").value,
+        email: document.getElementById("email").value,
+        pesan: document.getElementById("pesan").value
+      };
 
-    btn.addEventListener("click", async () => {
-      const nama = document.getElementById("nama").value.trim();
-      const email = document.getElementById("email").value.trim();
-      const komentar = document.getElementById("komentar").value.trim();
-
-      if (!nama || !email || !komentar) {
-        statusEl.textContent = "⚠️ Harap isi semua kolom.";
-        statusEl.style.color = "#dc2626";
-        return;
-      }
-
-      btn.disabled = true;
-      btn.textContent = "Mengirim...";
-      statusEl.textContent = "";
+      document.getElementById("status").textContent = "Mengirim...";
 
       try {
-        const response = await fetch(SHEET_URL, {
+        const res = await fetch(SCRIPT_URL, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ nama, email, komentar })
+          body: JSON.stringify(data),
+          headers: { "Content-Type": "application/json" }
         });
-
-        const result = await response.json();
-
-        if (result.status === "OK") {
-          statusEl.textContent = "✅ " + result.message;
-          statusEl.style.color = "#16a34a";
-          document.getElementById("formData").reset();
-        } else {
-          statusEl.textContent = "❌ " + result.message;
-          statusEl.style.color = "#dc2626";
-        }
-
+        const text = await res.text();
+        document.getElementById("status").textContent = text === "Sukses" ? "Data berhasil dikirim!" : text;
       } catch (err) {
-        statusEl.textContent = "❌ Gagal koneksi: " + err.message;
-        statusEl.style.color = "#dc2626";
-      } finally {
-        btn.disabled = false;
-        btn.textContent = "Kirim";
+        document.getElementById("status").textContent = "Gagal mengirim!";
       }
     });
   </script>
-
 </body>
 </html>
