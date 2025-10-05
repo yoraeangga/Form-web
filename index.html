@@ -11,48 +11,37 @@
       width: 100%; padding: 8px; margin-top: 5px;
     }
     button { background: green; color: white; border: none; cursor: pointer; margin-top: 10px; }
+    #status { margin-top: 10px; font-weight: bold; }
   </style>
 </head>
 <body>
   <h2>Form Kirim ke Google Sheet</h2>
 
-  <label>Nama:</label>
-  <input type="text" id="nama">
+  <form action="https://script.google.com/macros/s/AKfycbzse_68vIKalKsWzE5fYyPzPCNm8mQ0gNEwzc0m7OW2O1BYOplkBOpoNmXVFbe78UY/exec" method="POST" target="hidden_iframe" onsubmit="submitted()">
+    <label>Nama:</label>
+    <input type="text" name="nama" required>
 
-  <label>Email:</label>
-  <input type="email" id="email">
+    <label>Email:</label>
+    <input type="email" name="email" required>
 
-  <label>Pesan:</label>
-  <textarea id="pesan"></textarea>
+    <label>Pesan:</label>
+    <textarea name="pesan" required></textarea>
 
-  <button id="kirim">Kirim</button>
+    <button type="submit">Kirim</button>
+  </form>
 
   <p id="status"></p>
+  <iframe name="hidden_iframe" style="display:none;" onload="iframeLoaded()"></iframe>
 
   <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzse_68vIKalKsWzE5fYyPzPCNm8mQ0gNEwzc0m7OW2O1BYOplkBOpoNmXVFbe78UY/exec";
+    function submitted() {
+      document.getElementById('status').textContent = 'Mengirim...';
+    }
 
-    document.getElementById("kirim").addEventListener("click", async () => {
-      const data = {
-        nama: document.getElementById("nama").value,
-        email: document.getElementById("email").value,
-        pesan: document.getElementById("pesan").value
-      };
-
-      document.getElementById("status").textContent = "Mengirim...";
-
-      try {
-        const res = await fetch(SCRIPT_URL, {
-          method: "POST",
-          body: JSON.stringify(data),
-          headers: { "Content-Type": "application/json" }
-        });
-        const text = await res.text();
-        document.getElementById("status").textContent = text === "Sukses" ? "Data berhasil dikirim!" : text;
-      } catch (err) {
-        document.getElementById("status").textContent = "Gagal mengirim!";
-      }
-    });
+    function iframeLoaded() {
+      // Set status sukses ketika iframe selesai submit
+      document.getElementById('status').textContent = 'Data berhasil dikirim!';
+    }
   </script>
 </body>
 </html>
