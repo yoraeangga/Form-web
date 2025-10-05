@@ -6,8 +6,8 @@
   <title>Form Kirim ke Google Sheet</title>
   <style>
     body { font-family: Arial, sans-serif; max-width: 400px; margin: 50px auto; }
-    label { display: block; margin-top: 10px; }
-    input, textarea, button {
+    label { display: block; margin-top: 10px; font-weight: bold; }
+    input, textarea, select, button {
       width: 100%; padding: 8px; margin-top: 5px;
       box-sizing: border-box;
       transition: opacity 0.3s;
@@ -15,11 +15,16 @@
     button {
       background: green; color: white; border: none; cursor: pointer; margin-top: 10px;
     }
-    button.sending {
+    .sending {
       opacity: 0.5;
       cursor: not-allowed;
     }
-    #status { margin-top: 10px; font-weight: bold; transition: opacity 0.5s; opacity: 0; }
+    #status {
+      margin-top: 10px;
+      font-weight: bold;
+      transition: opacity 0.5s;
+      opacity: 0;
+    }
   </style>
 </head>
 <body>
@@ -40,22 +45,29 @@
 
   <p id="status"></p>
 
-  <!-- Iframe untuk submit -->
   <iframe name="hidden_iframe" style="display:none;" onload="iframeLoaded()"></iframe>
 
   <script>
     const form = document.getElementById('myForm');
     const submitBtn = document.getElementById('submitBtn');
     const status = document.getElementById('status');
+    let sending = false;
 
     function submitted() {
+      if(sending) return; // cegah multiple click
+      sending = true;
+
       // Status sementara
       status.textContent = 'Mengirim...';
       status.style.opacity = 1;
 
-      // Ubah tombol submit menjadi "Mengirim..." + efek pudar
+      // Beri efek pudar semua input & tombol (tetap enabled)
+      form.querySelectorAll('input, textarea, select, button').forEach(el => {
+        el.classList.add('sending');
+      });
+
+      // Tombol submit ubah teks
       submitBtn.textContent = 'Mengirim...';
-      submitBtn.classList.add('sending');
 
       // Tandai form sudah submit
       form.dataset.submitted = "true";
@@ -70,11 +82,17 @@
       // Reset form
       form.reset();
 
+      // Hapus efek pudar
+      form.querySelectorAll('input, textarea, select, button').forEach(el => {
+        el.classList.remove('sending');
+      });
+
       // Kembalikan tombol submit
       submitBtn.textContent = 'Kirim';
-      submitBtn.classList.remove('sending');
 
+      // Reset flags
       form.dataset.submitted = "false";
+      sending = false;
 
       // Hilangkan status setelah 3 detik
       setTimeout(() => { status.style.opacity = 0; }, 3000);
