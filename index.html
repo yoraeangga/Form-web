@@ -6,7 +6,7 @@
   <title>Form Kirim ke Google Sheet</title>
   <style>
     body { font-family: Arial, sans-serif; max-width: 400px; margin: 50px auto; }
-    label { display: block; margin-top: 10px; }
+    label { display: block; margin-top: 10px; font-weight: bold; }
     input, textarea, select, button {
       width: 100%; padding: 8px; margin-top: 5px;
       box-sizing: border-box;
@@ -15,15 +15,16 @@
     button {
       background: green; color: white; border: none; cursor: pointer; margin-top: 10px;
     }
-    button.sending {
+    .sending {
       opacity: 0.5;
       cursor: not-allowed;
     }
-    input.sending, textarea.sending, select.sending {
-      opacity: 0.5;
-      cursor: not-allowed;
+    #status {
+      margin-top: 10px;
+      font-weight: bold;
+      transition: opacity 0.5s;
+      opacity: 0;
     }
-    #status { margin-top: 10px; font-weight: bold; transition: opacity 0.5s; opacity: 0; }
   </style>
 </head>
 <body>
@@ -50,19 +51,22 @@
     const form = document.getElementById('myForm');
     const submitBtn = document.getElementById('submitBtn');
     const status = document.getElementById('status');
+    let sending = false;
 
     function submitted() {
+      if(sending) return; // cegah multiple click
+      sending = true;
+
       // Status sementara
       status.textContent = 'Mengirim...';
       status.style.opacity = 1;
 
-      // Tambahkan class sending ke semua input/textarea/select
+      // Beri efek pudar semua input & tombol (tetap enabled)
       form.querySelectorAll('input, textarea, select, button').forEach(el => {
-        el.disabled = true;
         el.classList.add('sending');
       });
 
-      // Ganti teks tombol
+      // Tombol submit ubah teks
       submitBtn.textContent = 'Mengirim...';
 
       // Tandai form sudah submit
@@ -78,16 +82,17 @@
       // Reset form
       form.reset();
 
-      // Aktifkan kembali semua elemen & hapus class sending
+      // Hapus efek pudar
       form.querySelectorAll('input, textarea, select, button').forEach(el => {
-        el.disabled = false;
         el.classList.remove('sending');
       });
 
-      // Kembalikan teks tombol
+      // Kembalikan tombol submit
       submitBtn.textContent = 'Kirim';
 
+      // Reset flags
       form.dataset.submitted = "false";
+      sending = false;
 
       // Hilangkan status setelah 3 detik
       setTimeout(() => { status.style.opacity = 0; }, 3000);
