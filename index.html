@@ -11,12 +11,8 @@
       margin: 50px auto;
       padding: 10px;
     }
-    label {
-      display: block;
-      margin-top: 10px;
-      font-weight: bold;
-    }
-    input, textarea, select, button {
+    label { display: block; margin-top: 10px; font-weight: bold; }
+    input, textarea, button {
       width: 100%;
       padding: 8px;
       margin-top: 5px;
@@ -30,7 +26,8 @@
       cursor: pointer;
       margin-top: 10px;
     }
-    button:disabled {
+    button.sending {
+      opacity: 0.5;
       cursor: not-allowed;
     }
     #status {
@@ -66,18 +63,13 @@
     const status = document.getElementById('status');
 
     function submitted() {
-      // Set status dan tampilkan
+      // Tampilkan status
       status.textContent = 'Mengirim...';
       status.style.opacity = 1;
 
-      // Disable semua elemen form & tombol
-      form.querySelectorAll('input, textarea, select, button').forEach(el => {
-        el.disabled = true;
-        el.style.opacity = 0.5;
-      });
-
-      // Ganti teks tombol
+      // Hanya ubah tombol submit jadi "Mengirim..." + efek pudar
       submitBtn.textContent = 'Mengirim...';
+      submitBtn.classList.add('sending');
 
       // Tandai form sudah submit
       form.dataset.submitted = "true";
@@ -86,23 +78,19 @@
     function iframeLoaded() {
       if(form.dataset.submitted !== "true") return;
 
-      // Set status sukses
+      // Status sukses
       status.textContent = 'Data berhasil dikirim!';
 
       // Reset form
       form.reset();
 
-      // Aktifkan kembali semua elemen & kembalikan opacity
-      form.querySelectorAll('input, textarea, select, button').forEach(el => {
-        el.disabled = false;
-        el.style.opacity = 1;
-      });
-
-      // Kembalikan teks tombol
+      // Kembalikan tombol submit
       submitBtn.textContent = 'Kirim';
+      submitBtn.classList.remove('sending');
+
       form.dataset.submitted = "false";
 
-      // Hilangkan status setelah 3 detik dengan animasi
+      // Hilangkan status setelah 3 detik
       setTimeout(() => { status.style.opacity = 0; }, 3000);
     }
   </script>
