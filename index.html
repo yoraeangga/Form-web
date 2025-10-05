@@ -78,47 +78,55 @@
     <p id="status"></p>
   </div>
 
-  <script>
-    const SHEET_URL = "https://script.google.com/macros/s/AKfycbz-FwUchXaJ_LOt2FG9nDnU7EqLxaCccW6zJ8pYyoFlvEWKoWVktev1fhO4XAqnv0X_rQ/exec";
-    const btn = document.getElementById("btnSubmit");
-    const statusEl = document.getElementById("status");
+ <script>
+const SHEET_URL = "PASTE_WEBAPP_URL_HERE"; // tempel URL /exec yang baru
 
-    btn.addEventListener("click", async () => {
-      const nama = document.getElementById("nama").value.trim();
-      const email = document.getElementById("email").value.trim();
-      const komentar = document.getElementById("komentar").value.trim();
+const btn = document.getElementById("btnSubmit");
+const statusEl = document.getElementById("status");
 
-      if (!nama || !email || !komentar) {
-        statusEl.textContent = "⚠️ Harap isi semua kolom.";
-        statusEl.style.color = "#dc2626";
-        return;
-      }
+btn.addEventListener("click", async () => {
+  const nama = document.getElementById("nama").value.trim();
+  const email = document.getElementById("email").value.trim();
+  const komentar = document.getElementById("komentar").value.trim();
 
-      btn.disabled = true;
-      btn.textContent = "Mengirim...";
-      statusEl.textContent = "";
+  if (!nama || !email || !komentar) {
+    statusEl.textContent = "⚠️ Harap isi semua kolom.";
+    statusEl.style.color = "#dc2626";
+    return;
+  }
 
-      try {
-        await fetch(SHEET_URL, {
-          method: "POST",
-          mode: "no-cors",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ nama, email, komentar })
-        });
+  btn.disabled = true;
+  btn.textContent = "Mengirim...";
+  statusEl.textContent = "";
 
-        statusEl.textContent = "✅ Data berhasil dikirim!";
-        statusEl.style.color = "#16a34a";
-        document.getElementById("nama").value = "";
-        document.getElementById("email").value = "";
-        document.getElementById("komentar").value = "";
-      } catch (err) {
-        statusEl.textContent = "❌ Gagal koneksi: " + err;
-        statusEl.style.color = "#dc2626";
-      } finally {
-        btn.disabled = false;
-        btn.textContent = "Kirim";
-      }
+  try {
+    const response = await fetch(SHEET_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ nama, email, komentar })
     });
-  </script>
+
+    const result = await response.json(); // Sekarang bisa dibaca!
+
+    if (result.status === "OK") {
+      statusEl.textContent = "✅ " + result.message;
+      statusEl.style.color = "#16a34a";
+      document.getElementById("nama").value = "";
+      document.getElementById("email").value = "";
+      document.getElementById("komentar").value = "";
+    } else {
+      statusEl.textContent = "❌ " + result.message;
+      statusEl.style.color = "#dc2626";
+    }
+
+  } catch (err) {
+    statusEl.textContent = "❌ Gagal koneksi: " + err.message;
+    statusEl.style.color = "#dc2626";
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "Kirim";
+  }
+});
+</script>
 </body>
 </html>
