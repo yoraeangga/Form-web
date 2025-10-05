@@ -1,62 +1,45 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Form Publik</title>
-  <style>
-    body { font-family: Arial, sans-serif; max-width: 600px; margin: 40px auto; padding: 0 16px; }
-    h2 { color: #0077cc; }
-    label { display: block; margin-top: 12px; }
-    input, textarea { width: 100%; padding: 8px; margin-top: 4px; box-sizing: border-box; }
-    button { margin-top: 12px; padding: 10px 16px; background: #0077cc; color: white; border: none; border-radius: 6px; cursor: pointer; }
-    .msg { margin-top: 10px; font-weight: bold; }
-  </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Form Kirim ke Google Sheet</title>
 </head>
 <body>
-  <h2>Form Pengisian</h2>
-  <form id="myForm">
-    <label>Nama
-      <input type="text" id="nama" required />
-    </label>
-    <label>Email
-      <input type="email" id="email" required />
-    </label>
-    <label>Komentar
-      <textarea id="komentar" rows="4"></textarea>
-    </label>
-    <button type="submit">Kirim</button>
-  </form>
-  <div class="msg" id="msg"></div>
+  <h2>Form Kirim Data</h2>
+
+  <label>Nama: </label><br>
+  <input type="text" id="nama"><br><br>
+
+  <label>Email: </label><br>
+  <input type="email" id="email"><br><br>
+
+  <label>Komentar: </label><br>
+  <textarea id="komentar"></textarea><br><br>
+
+  <button id="btnSubmit">Kirim</button>
+
+  <p id="status"></p>
 
   <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxMzpeaT5qIum2RXc5QZTGiy3PfSDqNY2Rh3Zk8CxJsn2xmrha7l8WGouxT_tQRkBDuJQ/exec"; // <--- GANTI dengan URL Apps Script kamu
+    const SHEET_URL = "https://script.google.com/macros/s/AKfycbz-FwUchXaJ_LOt2FG9nDnU7EqLxaCccW6zJ8pYyoFlvEWKoWVktev1fhO4XAqnv0X_rQ/exec";
 
-    document.getElementById('myForm').addEventListener('submit', e => {
-      e.preventDefault();
-      const data = {
-        nama: document.getElementById('nama').value,
-        email: document.getElementById('email').value,
-        komentar: document.getElementById('komentar').value
-      };
-      document.getElementById('msg').textContent = "Mengirim...";
-      fetch(SCRIPT_URL, {
+    document.getElementById("btnSubmit").addEventListener("click", () => {
+      const nama = document.getElementById("nama").value;
+      const email = document.getElementById("email").value;
+      const komentar = document.getElementById("komentar").value;
+
+      fetch(SHEET_URL, {
         method: "POST",
         mode: "no-cors",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data)
+        body: JSON.stringify({ nama, email, komentar })
       })
-      .then(res => res.json())
-      .then(r => {
-        if(r.status === "OK"){
-          document.getElementById('msg').textContent = "Data berhasil dikirim ✅";
-          document.getElementById('myForm').reset();
-        } else {
-          document.getElementById('msg').textContent = "Gagal: " + r.message;
-        }
+      .then(() => {
+        document.getElementById("status").innerText = "✅ Data terkirim!";
       })
       .catch(err => {
-        document.getElementById('msg').textContent = "Error koneksi: " + err;
+        document.getElementById("status").innerText = "❌ Gagal: " + err;
       });
     });
   </script>
