@@ -11,13 +11,13 @@
       width: 100%; padding: 8px; margin-top: 5px;
     }
     button { background: green; color: white; border: none; cursor: pointer; margin-top: 10px; }
-    #status { margin-top: 10px; font-weight: bold; }
+    #status { margin-top: 10px; font-weight: bold; transition: opacity 0.5s; }
   </style>
 </head>
 <body>
   <h2>Form Kirim ke Google Sheet</h2>
 
-  <form action="https://script.google.com/macros/s/AKfycbzse_68vIKalKsWzE5fYyPzPCNm8mQ0gNEwzc0m7OW2O1BYOplkBOpoNmXVFbe78UY/exec" method="POST" target="hidden_iframe" onsubmit="submitted()">
+  <form id="myForm" action="https://script.google.com/macros/s/AKfycbzse_68vIKalKsWzE5fYyPzPCNm8mQ0gNEwzc0m7OW2O1BYOplkBOpoNmXVFbe78UY/exec" method="POST" target="hidden_iframe" onsubmit="submitted()">
     <label>Nama:</label>
     <input type="text" name="nama" required>
 
@@ -31,17 +31,34 @@
   </form>
 
   <p id="status"></p>
+
+  <!-- Iframe untuk submit -->
   <iframe name="hidden_iframe" style="display:none;" onload="iframeLoaded()"></iframe>
 
   <script>
     function submitted() {
-      document.getElementById('status').textContent = 'Mengirim...';
+      const status = document.getElementById('status');
+      status.textContent = 'Mengirim...';
+      status.style.opacity = 1;
     }
 
     function iframeLoaded() {
-      // Set status sukses ketika iframe selesai submit
-      document.getElementById('status').textContent = 'Data berhasil dikirim!';
+      const status = document.getElementById('status');
+      // Hanya tampil jika ada form yg sudah submit
+      if(document.getElementById('myForm').dataset.submitted !== "true") return;
+      
+      status.textContent = 'Data berhasil dikirim!';
+      document.getElementById('myForm').reset();           // reset form
+      document.getElementById('myForm').dataset.submitted = "false";
+
+      // Hilangkan status setelah 3 detik
+      setTimeout(() => { status.style.opacity = 0; }, 3000);
     }
+
+    // Tandai form sudah submit
+    document.getElementById('myForm').addEventListener('submit', function(){
+      this.dataset.submitted = "true";
+    });
   </script>
 </body>
 </html>
