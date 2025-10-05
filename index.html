@@ -9,9 +9,17 @@
     label { display: block; margin-top: 10px; }
     input, textarea, button {
       width: 100%; padding: 8px; margin-top: 5px;
+      box-sizing: border-box;
+      transition: opacity 0.3s;
     }
-    button { background: green; color: white; border: none; cursor: pointer; margin-top: 10px; }
-    #status { margin-top: 10px; font-weight: bold; transition: opacity 0.5s; }
+    button {
+      background: green; color: white; border: none; cursor: pointer; margin-top: 10px;
+    }
+    button.sending {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    #status { margin-top: 10px; font-weight: bold; transition: opacity 0.5s; opacity: 0; }
   </style>
 </head>
 <body>
@@ -27,7 +35,7 @@
     <label>Pesan:</label>
     <textarea name="pesan" required></textarea>
 
-    <button type="submit">Kirim</button>
+    <button type="submit" id="submitBtn">Kirim</button>
   </form>
 
   <p id="status"></p>
@@ -36,29 +44,41 @@
   <iframe name="hidden_iframe" style="display:none;" onload="iframeLoaded()"></iframe>
 
   <script>
+    const form = document.getElementById('myForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const status = document.getElementById('status');
+
     function submitted() {
-      const status = document.getElementById('status');
+      // Status sementara
       status.textContent = 'Mengirim...';
       status.style.opacity = 1;
+
+      // Ubah tombol submit menjadi "Mengirim..." + efek pudar
+      submitBtn.textContent = 'Mengirim...';
+      submitBtn.classList.add('sending');
+
+      // Tandai form sudah submit
+      form.dataset.submitted = "true";
     }
 
     function iframeLoaded() {
-      const status = document.getElementById('status');
-      // Hanya tampil jika ada form yg sudah submit
-      if(document.getElementById('myForm').dataset.submitted !== "true") return;
-      
+      if(form.dataset.submitted !== "true") return;
+
+      // Status sukses
       status.textContent = 'Data berhasil dikirim!';
-      document.getElementById('myForm').reset();           // reset form
-      document.getElementById('myForm').dataset.submitted = "false";
+
+      // Reset form
+      form.reset();
+
+      // Kembalikan tombol submit
+      submitBtn.textContent = 'Kirim';
+      submitBtn.classList.remove('sending');
+
+      form.dataset.submitted = "false";
 
       // Hilangkan status setelah 3 detik
       setTimeout(() => { status.style.opacity = 0; }, 3000);
     }
-
-    // Tandai form sudah submit
-    document.getElementById('myForm').addEventListener('submit', function(){
-      this.dataset.submitted = "true";
-    });
   </script>
 </body>
 </html>
