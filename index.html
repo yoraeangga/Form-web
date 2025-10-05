@@ -3,100 +3,253 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Form Kirim ke Google Sheet</title>
+  <title>Form Transaksi Masuk & Keluar</title>
   <style>
-    body { font-family: Arial, sans-serif; max-width: 400px; margin: 50px auto; }
+    body { font-family: Arial, sans-serif; max-width: 900px; margin: 20px auto; }
+    h2 { text-align: center; }
+    .tab { display: inline-block; padding: 10px 20px; background: #eee; cursor: pointer; margin-right: 5px; }
+    .tab.active { background: #4CAF50; color: white; }
+    .form-container { display: none; margin-top: 20px; }
+    .form-container.active { display: block; }
     label { display: block; margin-top: 10px; font-weight: bold; }
-    input, textarea, select, button {
-      width: 100%; padding: 8px; margin-top: 5px;
-      box-sizing: border-box;
-      transition: opacity 0.3s;
-    }
-    button {
-      background: green; color: white; border: none; cursor: pointer; margin-top: 10px;
-    }
-    .sending {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-    #status {
-      margin-top: 10px;
-      font-weight: bold;
-      transition: opacity 0.5s;
-      opacity: 0;
-    }
+    input, textarea, select, button { width: 100%; padding: 6px; margin-top: 5px; box-sizing: border-box; transition: opacity 0.3s; }
+    button { background: green; color: white; border: none; cursor: pointer; margin-top: 10px; }
+    button.sending, input.sending, textarea.sending, select.sending { opacity: 0.5; cursor: not-allowed; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    table, th, td { border: 1px solid #ccc; }
+    th, td { padding: 5px; text-align: center; }
+    .small-btn { padding: 4px 6px; margin: 2px; cursor: pointer; }
+    #status { margin-top: 10px; font-weight: bold; transition: opacity 0.5s; opacity: 0; }
+    .hidden { display: none; }
   </style>
 </head>
 <body>
-  <h2>Form Kirim ke Google Sheet</h2>
+<h2>Form Transaksi</h2>
 
-  <form id="myForm" action="https://script.google.com/macros/s/AKfycbzse_68vIKalKsWzE5fYyPzPCNm8mQ0gNEwzc0m7OW2O1BYOplkBOpoNmXVFbe78UY/exec" method="POST" target="hidden_iframe" onsubmit="submitted()">
-    <label>Nama:</label>
-    <input type="text" name="nama" required>
+<!-- Tabs -->
+<div>
+  <div class="tab active" onclick="openTab('masuk')">Transaksi Masuk</div>
+  <div class="tab" onclick="openTab('keluar')">Transaksi Keluar</div>
+</div>
 
-    <label>Email:</label>
-    <input type="email" name="email" required>
+<!-- Transaksi Masuk -->
+<div id="masuk" class="form-container active">
+  <form id="formMasuk" action="https://script.google.com/macros/s/AKfycbzse_68vIKalKsWzE5fYyPzPCNm8mQ0gNEwzc0m7OW2O1BYOplkBOpoNmXVFbe78UY/exec" method="POST" target="hidden_iframe" onsubmit="submitted('masuk')">
+    <input type="hidden" name="tipe" value="masuk">
+    <label>No Transaksi:</label>
+    <input type="text" name="noTransaksi" id="noTransaksiMasuk" readonly>
 
-    <label>Pesan:</label>
-    <textarea name="pesan" required></textarea>
+    <label>Tanggal:</label>
+    <input type="text" name="tanggal" value="" id="tanggalMasuk" readonly>
 
-    <button type="submit" id="submitBtn">Kirim</button>
+    <label>Supplier:</label>
+    <input type="text" name="supplier" required>
+
+    <label>Table Pembelian:</label>
+    <table id="tableMasuk">
+      <thead>
+        <tr>
+          <th>Nama Barang</th>
+          <th>Kode Barang</th>
+          <th>Jumlah</th>
+          <th>Satuan</th>
+          <th>Harga(Rp)</th>
+          <th>SubTotal(Rp)</th>
+          <th>Aksi</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+    <button type="button" onclick="addRow('masuk')">Tambah Barang</button>
+
+    <label>Diskon (%):</label>
+    <input type="number" name="diskon" value="0" min="0" max="100" onchange="updateTotal('masuk')">
+
+    <label>Total (Rp):</label>
+    <input type="text" name="total" id="totalMasuk" readonly>
+
+    <label>Metode Pembayaran:</label>
+    <select name="metode" onchange="togglePaymentFields('masuk', this.value)">
+      <option value="Tunai">Tunai</option>
+      <option value="Transfer">Transfer</option>
+    </select>
+
+    <div id="tunaiMasuk">
+      <label>Kembalian:</label>
+      <input type="text" name="kembalian" id="kembalianMasuk" readonly>
+    </div>
+
+    <div id="transferMasuk" class="hidden">
+      <label>Nama Bank:</label>
+      <input type="text" name="bank">
+      <label>Atas Nama:</label>
+      <input type="text" name="atasNama">
+      <label>Nomor Rekening:</label>
+      <input type="text" name="noRek">
+    </div>
+
+    <button type="submit" id="submitMasuk">Kirim</button>
   </form>
+</div>
 
-  <p id="status"></p>
+<!-- Transaksi Keluar -->
+<div id="keluar" class="form-container">
+  <form id="formKeluar" action="https://script.google.com/macros/s/AKfycbzse_68vIKalKsWzE5fYyPzPCNm8mQ0gNEwzc0m7OW2O1BYOplkBOpoNmXVFbe78UY/exec" method="POST" target="hidden_iframe" onsubmit="submitted('keluar')">
+    <input type="hidden" name="tipe" value="keluar">
+    <label>No Transaksi:</label>
+    <input type="text" name="noTransaksi" id="noTransaksiKeluar" readonly>
 
-  <iframe name="hidden_iframe" style="display:none;" onload="iframeLoaded()"></iframe>
+    <label>Tanggal:</label>
+    <input type="text" name="tanggal" value="" id="tanggalKeluar" readonly>
 
-  <script>
-    const form = document.getElementById('myForm');
-    const submitBtn = document.getElementById('submitBtn');
-    const status = document.getElementById('status');
-    let sending = false;
+    <label>Nama Pembeli:</label>
+    <input type="text" name="namaPembeli" required>
 
-    function submitted() {
-      if(sending) return; // cegah multiple click
-      sending = true;
+    <label>Table Penjualan:</label>
+    <table id="tableKeluar">
+      <thead>
+        <tr>
+          <th>Nama Barang</th>
+          <th>Kode Barang</th>
+          <th>Jumlah</th>
+          <th>Satuan</th>
+          <th>Harga(Rp)</th>
+          <th>SubTotal(Rp)</th>
+          <th>Aksi</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+    <button type="button" onclick="addRow('keluar')">Tambah Barang</button>
 
-      // Status sementara
-      status.textContent = 'Mengirim...';
-      status.style.opacity = 1;
+    <label>Total (Rp):</label>
+    <input type="text" name="total" id="totalKeluar" readonly>
 
-      // Beri efek pudar semua input & tombol (tetap enabled)
-      form.querySelectorAll('input, textarea, select, button').forEach(el => {
-        el.classList.add('sending');
-      });
+    <label>Metode Pembayaran:</label>
+    <select name="metode" onchange="togglePaymentFields('keluar', this.value)">
+      <option value="Tunai">Tunai</option>
+      <option value="Transfer">Transfer</option>
+    </select>
 
-      // Tombol submit ubah teks
-      submitBtn.textContent = 'Mengirim...';
+    <div id="tunaiKeluar">
+      <label>Kembalian:</label>
+      <input type="text" name="kembalian" id="kembalianKeluar" readonly>
+    </div>
 
-      // Tandai form sudah submit
-      form.dataset.submitted = "true";
-    }
+    <div id="transferKeluar" class="hidden">
+      <label>Nama Bank:</label>
+      <input type="text" name="bank">
+      <label>Atas Nama:</label>
+      <input type="text" name="atasNama">
+      <label>Nomor Rekening:</label>
+      <input type="text" name="noRek">
+    </div>
 
-    function iframeLoaded() {
-      if(form.dataset.submitted !== "true") return;
+    <label>User/Kasir:</label>
+    <input type="text" name="user" required>
 
-      // Status sukses
-      status.textContent = 'Data berhasil dikirim!';
+    <button type="submit" id="submitKeluar">Kirim</button>
+  </form>
+</div>
 
-      // Reset form
+<p id="status"></p>
+<iframe name="hidden_iframe" style="display:none;" onload="iframeLoaded()"></iframe>
+
+<script>
+const today = new Date().toLocaleDateString('id-ID');
+document.getElementById('tanggalMasuk').value = today;
+document.getElementById('tanggalKeluar').value = today;
+
+// Tab switch
+function openTab(tab){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.form-container').forEach(f=>f.classList.remove('active'));
+  document.querySelector('.tab[onclick*="'+tab+'"]').classList.add('active');
+  document.getElementById(tab).classList.add('active');
+}
+
+// Tabel dinamis
+function addRow(type){
+  const tbody = document.querySelector(`#table${capitalize(type)} tbody`);
+  const row = document.createElement('tr');
+  row.innerHTML = `
+    <td><input type="text" name="namaBarang[]" required></td>
+    <td><input type="text" name="kodeBarang[]" required></td>
+    <td><input type="number" name="jumlah[]" value="1" min="1" onchange="updateSubtotal('${type}',this)"></td>
+    <td>
+      <select name="satuan[]">
+        <option>Buah</option><option>Pak</option><option>Dus</option><option>Kg</option><option>Meter</option>
+      </select>
+    </td>
+    <td><input type="number" name="harga[]" value="0" min="0" onchange="updateSubtotal('${type}',this)"></td>
+    <td><input type="text" name="subTotal[]" value="0" readonly></td>
+    <td><button type="button" class="small-btn" onclick="deleteRow(this,'${type}')">Hapus</button></td>
+  `;
+  tbody.appendChild(row);
+  updateTotal(type);
+}
+
+function deleteRow(btn,type){ btn.closest('tr').remove(); updateTotal(type); }
+
+function updateSubtotal(type,el){
+  const row = el.closest('tr');
+  const jumlah = parseFloat(row.querySelector('input[name="jumlah[]"]').value)||0;
+  const harga = parseFloat(row.querySelector('input[name="harga[]"]').value)||0;
+  row.querySelector('input[name="subTotal[]"]').value = formatRupiah(jumlah*harga);
+  updateTotal(type);
+}
+
+function updateTotal(type){
+  const rows = document.querySelectorAll(`#table${capitalize(type)} tbody tr`);
+  let total = 0;
+  rows.forEach(r=>{
+    total += parseFloat(r.querySelector('input[name="subTotal[]"]').value.replace(/\./g,''))||0;
+  });
+  if(type==='masuk'){
+    const diskon = parseFloat(document.querySelector('#formMasuk input[name="diskon"]').value)||0;
+    total -= total*diskon/100;
+    document.getElementById('totalMasuk').value = formatRupiah(total);
+  } else {
+    document.getElementById('totalKeluar').value = formatRupiah(total);
+  }
+}
+
+function togglePaymentFields(type,value){
+  document.getElementById('tunai'+capitalize(type)).classList.toggle('hidden',value!=='Tunai');
+  document.getElementById('transfer'+capitalize(type)).classList.toggle('hidden',value!=='Transfer');
+}
+
+function formatRupiah(num){ return num.toLocaleString('id-ID', {minimumFractionDigits:0}); }
+function capitalize(str){ return str.charAt(0).toUpperCase()+str.slice(1); }
+
+// Submit handling
+let sending=false;
+function submitted(type){
+  if(sending) return;
+  sending=true;
+  const form = document.getElementById('form'+capitalize(type));
+  const submitBtn = document.getElementById('submit'+capitalize(type));
+  const status = document.getElementById('status');
+
+  status.textContent='Mengirim...';
+  status.style.opacity=1;
+  form.querySelectorAll('input,textarea,select,button').forEach(el=>el.classList.add('sending'));
+  submitBtn.textContent='Mengirim...';
+  form.dataset.submitted="true";
+}
+
+function iframeLoaded(){
+  document.querySelectorAll('form').forEach(form=>{
+    if(form.dataset.submitted==='true'){
+      const type = form.id.includes('Masuk')?'masuk':'keluar';
+      document.getElementById('status').textContent='Data berhasil dikirim!';
       form.reset();
-
-      // Hapus efek pudar
-      form.querySelectorAll('input, textarea, select, button').forEach(el => {
-        el.classList.remove('sending');
-      });
-
-      // Kembalikan tombol submit
-      submitBtn.textContent = 'Kirim';
-
-      // Reset flags
-      form.dataset.submitted = "false";
-      sending = false;
-
-      // Hilangkan status setelah 3 detik
-      setTimeout(() => { status.style.opacity = 0; }, 3000);
+      form.querySelectorAll('input,textarea,select,button').forEach(el=>el.classList.remove('sending'));
+      document.getElementById('submit'+capitalize(type)).textContent='Kirim';
+      form.dataset.submitted='false';
+      sending=false;
+      setTimeout(()=>{document.getElementById('status').style.opacity=0;},3000);
     }
-  </script>
-</body>
-</html>
+  });
+}
+</script>
