@@ -7,7 +7,7 @@
   <style>
     body { font-family: Arial, sans-serif; max-width: 400px; margin: 50px auto; }
     label { display: block; margin-top: 10px; }
-    input, textarea, button {
+    input, textarea, select, button {
       width: 100%; padding: 8px; margin-top: 5px;
       box-sizing: border-box;
       transition: opacity 0.3s;
@@ -16,6 +16,10 @@
       background: green; color: white; border: none; cursor: pointer; margin-top: 10px;
     }
     button.sending {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    input.sending, textarea.sending, select.sending {
       opacity: 0.5;
       cursor: not-allowed;
     }
@@ -40,7 +44,6 @@
 
   <p id="status"></p>
 
-  <!-- Iframe untuk submit -->
   <iframe name="hidden_iframe" style="display:none;" onload="iframeLoaded()"></iframe>
 
   <script>
@@ -53,9 +56,14 @@
       status.textContent = 'Mengirim...';
       status.style.opacity = 1;
 
-      // Ubah tombol submit menjadi "Mengirim..." + efek pudar
+      // Tambahkan class sending ke semua input/textarea/select
+      form.querySelectorAll('input, textarea, select, button').forEach(el => {
+        el.disabled = true;
+        el.classList.add('sending');
+      });
+
+      // Ganti teks tombol
       submitBtn.textContent = 'Mengirim...';
-      submitBtn.classList.add('sending');
 
       // Tandai form sudah submit
       form.dataset.submitted = "true";
@@ -70,9 +78,14 @@
       // Reset form
       form.reset();
 
-      // Kembalikan tombol submit
+      // Aktifkan kembali semua elemen & hapus class sending
+      form.querySelectorAll('input, textarea, select, button').forEach(el => {
+        el.disabled = false;
+        el.classList.remove('sending');
+      });
+
+      // Kembalikan teks tombol
       submitBtn.textContent = 'Kirim';
-      submitBtn.classList.remove('sending');
 
       form.dataset.submitted = "false";
 
