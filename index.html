@@ -5,13 +5,40 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Form Kirim ke Google Sheet</title>
   <style>
-    body { font-family: Arial, sans-serif; max-width: 400px; margin: 50px auto; }
-    label { display: block; margin-top: 10px; }
-    input, textarea, button {
-      width: 100%; padding: 8px; margin-top: 5px;
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 400px;
+      margin: 50px auto;
+      padding: 10px;
     }
-    button { background: green; color: white; border: none; cursor: pointer; margin-top: 10px; }
-    #status { margin-top: 10px; font-weight: bold; transition: opacity 0.5s; }
+    label {
+      display: block;
+      margin-top: 10px;
+      font-weight: bold;
+    }
+    input, textarea, select, button {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      box-sizing: border-box;
+      transition: opacity 0.3s;
+    }
+    button {
+      background-color: green;
+      color: white;
+      border: none;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    button:disabled {
+      cursor: not-allowed;
+    }
+    #status {
+      margin-top: 10px;
+      font-weight: bold;
+      transition: opacity 0.5s;
+      opacity: 0;
+    }
   </style>
 </head>
 <body>
@@ -27,38 +54,57 @@
     <label>Pesan:</label>
     <textarea name="pesan" required></textarea>
 
-    <button type="submit">Kirim</button>
+    <button type="submit" id="submitBtn">Kirim</button>
   </form>
 
   <p id="status"></p>
-
-  <!-- Iframe untuk submit -->
   <iframe name="hidden_iframe" style="display:none;" onload="iframeLoaded()"></iframe>
 
   <script>
+    const form = document.getElementById('myForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const status = document.getElementById('status');
+
     function submitted() {
-      const status = document.getElementById('status');
+      // Set status dan tampilkan
       status.textContent = 'Mengirim...';
       status.style.opacity = 1;
+
+      // Disable semua elemen form & tombol
+      form.querySelectorAll('input, textarea, select, button').forEach(el => {
+        el.disabled = true;
+        el.style.opacity = 0.5;
+      });
+
+      // Ganti teks tombol
+      submitBtn.textContent = 'Mengirim...';
+
+      // Tandai form sudah submit
+      form.dataset.submitted = "true";
     }
 
     function iframeLoaded() {
-      const status = document.getElementById('status');
-      // Hanya tampil jika ada form yg sudah submit
-      if(document.getElementById('myForm').dataset.submitted !== "true") return;
-      
-      status.textContent = 'Data berhasil dikirim!';
-      document.getElementById('myForm').reset();           // reset form
-      document.getElementById('myForm').dataset.submitted = "false";
+      if(form.dataset.submitted !== "true") return;
 
-      // Hilangkan status setelah 3 detik
+      // Set status sukses
+      status.textContent = 'Data berhasil dikirim!';
+
+      // Reset form
+      form.reset();
+
+      // Aktifkan kembali semua elemen & kembalikan opacity
+      form.querySelectorAll('input, textarea, select, button').forEach(el => {
+        el.disabled = false;
+        el.style.opacity = 1;
+      });
+
+      // Kembalikan teks tombol
+      submitBtn.textContent = 'Kirim';
+      form.dataset.submitted = "false";
+
+      // Hilangkan status setelah 3 detik dengan animasi
       setTimeout(() => { status.style.opacity = 0; }, 3000);
     }
-
-    // Tandai form sudah submit
-    document.getElementById('myForm').addEventListener('submit', function(){
-      this.dataset.submitted = "true";
-    });
   </script>
 </body>
 </html>
