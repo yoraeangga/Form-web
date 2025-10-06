@@ -5,251 +5,169 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Form Transaksi Masuk & Keluar</title>
   <style>
-    body { font-family: Arial, sans-serif; max-width: 900px; margin: 20px auto; }
-    h2 { text-align: center; }
-    .tab { display: inline-block; padding: 10px 20px; background: #eee; cursor: pointer; margin-right: 5px; }
-    .tab.active { background: #4CAF50; color: white; }
-    .form-container { display: none; margin-top: 20px; }
-    .form-container.active { display: block; }
+    body {
+      font-family: Arial, sans-serif;
+      background: #f2f2f2;
+      margin: 0; padding: 0;
+    }
+    .container {
+      max-width: 600px;
+      margin: 30px auto;
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    h2 { text-align: center; margin-bottom: 20px; }
     label { display: block; margin-top: 10px; font-weight: bold; }
-    input, textarea, select, button { width: 100%; padding: 6px; margin-top: 5px; box-sizing: border-box; transition: opacity 0.3s; }
-    button { background: green; color: white; border: none; cursor: pointer; margin-top: 10px; }
-    button.sending, input.sending, textarea.sending, select.sending { opacity: 0.5; cursor: not-allowed; }
-    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-    table, th, td { border: 1px solid #ccc; }
-    th, td { padding: 5px; text-align: center; }
-    .small-btn { padding: 4px 6px; margin: 2px; cursor: pointer; }
-    #status { margin-top: 10px; font-weight: bold; transition: opacity 0.5s; opacity: 0; }
-    .hidden { display: none; }
+    input, select, textarea {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    button {
+      margin-top: 15px;
+      width: 100%;
+      padding: 10px;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    button:hover { background: #0056b3; }
+    .switch {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .success {
+      background: #d4edda;
+      color: #155724;
+      padding: 10px;
+      border-radius: 5px;
+      margin-top: 10px;
+      text-align: center;
+      display: none;
+    }
   </style>
 </head>
 <body>
-<h2>Form Transaksi</h2>
+  <div class="container">
+    <h2>Form Transaksi</h2>
 
-<!-- Tabs -->
-<div>
-  <div class="tab active" onclick="openTab('masuk')">Transaksi Masuk</div>
-  <div class="tab" onclick="openTab('keluar')">Transaksi Keluar</div>
-</div>
-
-<!-- Transaksi Masuk -->
-<div id="masuk" class="form-container active">
-  <form id="formMasuk" action="https://script.google.com/macros/s/AKfycbzse_68vIKalKsWzE5fYyPzPCNm8mQ0gNEwzc0m7OW2O1BYOplkBOpoNmXVFbe78UY/exec" method="POST" target="hidden_iframe" onsubmit="submitted('masuk')">
-    <input type="hidden" name="tipe" value="masuk">
-    <label>No Transaksi:</label>
-    <input type="text" name="noTransaksi" id="noTransaksiMasuk" readonly>
-
-    <label>Tanggal:</label>
-    <input type="text" name="tanggal" value="" id="tanggalMasuk" readonly>
-
-    <label>Supplier:</label>
-    <input type="text" name="supplier" required>
-
-    <label>Table Pembelian:</label>
-    <table id="tableMasuk">
-      <thead>
-        <tr>
-          <th>Nama Barang</th>
-          <th>Kode Barang</th>
-          <th>Jumlah</th>
-          <th>Satuan</th>
-          <th>Harga(Rp)</th>
-          <th>SubTotal(Rp)</th>
-          <th>Aksi</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-    <button type="button" onclick="addRow('masuk')">Tambah Barang</button>
-
-    <label>Diskon (%):</label>
-    <input type="number" name="diskon" value="0" min="0" max="100" onchange="updateTotal('masuk')">
-
-    <label>Total (Rp):</label>
-    <input type="text" name="total" id="totalMasuk" readonly>
-
-    <label>Metode Pembayaran:</label>
-    <select name="metode" onchange="togglePaymentFields('masuk', this.value)">
-      <option value="Tunai">Tunai</option>
-      <option value="Transfer">Transfer</option>
-    </select>
-
-    <div id="tunaiMasuk">
-      <label>Kembalian:</label>
-      <input type="text" name="kembalian" id="kembalianMasuk" readonly>
+    <div class="switch">
+      <button type="button" onclick="showForm('masuk')">Transaksi Masuk</button>
+      <button type="button" onclick="showForm('keluar')">Transaksi Keluar</button>
     </div>
 
-    <div id="transferMasuk" class="hidden">
-      <label>Nama Bank:</label>
-      <input type="text" name="bank">
-      <label>Atas Nama:</label>
-      <input type="text" name="atasNama">
-      <label>Nomor Rekening:</label>
-      <input type="text" name="noRek">
-    </div>
+    <!-- FORM MASUK -->
+    <form id="formMasuk">
+      <label>Pembelian</label>
+      <textarea id="masuk-pembelian" placeholder="Daftar barang yang dibeli"></textarea>
 
-    <button type="submit" id="submitMasuk">Kirim</button>
-  </form>
-</div>
+      <label>Total (Rp)</label>
+      <input type="number" id="masuk-total" placeholder="0">
 
-<!-- Transaksi Keluar -->
-<div id="keluar" class="form-container">
-  <form id="formKeluar" action="https://script.google.com/macros/s/AKfycbzse_68vIKalKsWzE5fYyPzPCNm8mQ0gNEwzc0m7OW2O1BYOplkBOpoNmXVFbe78UY/exec" method="POST" target="hidden_iframe" onsubmit="submitted('keluar')">
-    <input type="hidden" name="tipe" value="keluar">
-    <label>No Transaksi:</label>
-    <input type="text" name="noTransaksi" id="noTransaksiKeluar" readonly>
-
-    <label>Tanggal:</label>
-    <input type="text" name="tanggal" value="" id="tanggalKeluar" readonly>
-
-    <label>Nama Pembeli:</label>
-    <input type="text" name="namaPembeli" required>
-
-    <label>Table Penjualan:</label>
-    <table id="tableKeluar">
-      <thead>
-        <tr>
-          <th>Nama Barang</th>
-          <th>Kode Barang</th>
-          <th>Jumlah</th>
-          <th>Satuan</th>
-          <th>Harga(Rp)</th>
-          <th>SubTotal(Rp)</th>
-          <th>Aksi</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-    <button type="button" onclick="addRow('keluar')">Tambah Barang</button>
-
-    <label>Total (Rp):</label>
-    <input type="text" name="total" id="totalKeluar" readonly>
-
-    <label>Metode Pembayaran:</label>
-    <select name="metode" onchange="togglePaymentFields('keluar', this.value)">
-      <option value="Tunai">Tunai</option>
-      <option value="Transfer">Transfer</option>
-    </select>
-
-    <div id="tunaiKeluar">
-      <label>Kembalian:</label>
-      <input type="text" name="kembalian" id="kembalianKeluar" readonly>
-    </div>
-
-    <div id="transferKeluar" class="hidden">
-      <label>Nama Bank:</label>
-      <input type="text" name="bank">
-      <label>Atas Nama:</label>
-      <input type="text" name="atasNama">
-      <label>Nomor Rekening:</label>
-      <input type="text" name="noRek">
-    </div>
-
-    <label>User/Kasir:</label>
-    <input type="text" name="user" required>
-
-    <button type="submit" id="submitKeluar">Kirim</button>
-  </form>
-</div>
-
-<p id="status"></p>
-<iframe name="hidden_iframe" style="display:none;" onload="iframeLoaded()"></iframe>
-
-<script>
-const today = new Date().toLocaleDateString('id-ID');
-document.getElementById('tanggalMasuk').value = today;
-document.getElementById('tanggalKeluar').value = today;
-
-// Tab switch
-function openTab(tab){
-  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-  document.querySelectorAll('.form-container').forEach(f=>f.classList.remove('active'));
-  document.querySelector('.tab[onclick*="'+tab+'"]').classList.add('active');
-  document.getElementById(tab).classList.add('active');
-}
-
-// Tabel dinamis
-function addRow(type){
-  const tbody = document.querySelector(`#table${capitalize(type)} tbody`);
-  const row = document.createElement('tr');
-  row.innerHTML = `
-    <td><input type="text" name="namaBarang[]" required></td>
-    <td><input type="text" name="kodeBarang[]" required></td>
-    <td><input type="number" name="jumlah[]" value="1" min="1" onchange="updateSubtotal('${type}',this)"></td>
-    <td>
-      <select name="satuan[]">
-        <option>Buah</option><option>Pak</option><option>Dus</option><option>Kg</option><option>Meter</option>
+      <label>Metode Pembayaran</label>
+      <select id="masuk-metode">
+        <option value="Cash">Cash</option>
+        <option value="Transfer">Transfer</option>
       </select>
-    </td>
-    <td><input type="number" name="harga[]" value="0" min="0" onchange="updateSubtotal('${type}',this)"></td>
-    <td><input type="text" name="subTotal[]" value="0" readonly></td>
-    <td><button type="button" class="small-btn" onclick="deleteRow(this,'${type}')">Hapus</button></td>
-  `;
-  tbody.appendChild(row);
-  updateTotal(type);
-}
 
-function deleteRow(btn,type){ btn.closest('tr').remove(); updateTotal(type); }
+      <label>Supplier</label>
+      <input type="text" id="masuk-supplier" placeholder="Nama supplier">
 
-function updateSubtotal(type,el){
-  const row = el.closest('tr');
-  const jumlah = parseFloat(row.querySelector('input[name="jumlah[]"]').value)||0;
-  const harga = parseFloat(row.querySelector('input[name="harga[]"]').value)||0;
-  row.querySelector('input[name="subTotal[]"]').value = formatRupiah(jumlah*harga);
-  updateTotal(type);
-}
+      <label>Nomor Kontak</label>
+      <input type="text" id="masuk-nomor" placeholder="08xxxxxxxxxx">
 
-function updateTotal(type){
-  const rows = document.querySelectorAll(`#table${capitalize(type)} tbody tr`);
-  let total = 0;
-  rows.forEach(r=>{
-    total += parseFloat(r.querySelector('input[name="subTotal[]"]').value.replace(/\./g,''))||0;
-  });
-  if(type==='masuk'){
-    const diskon = parseFloat(document.querySelector('#formMasuk input[name="diskon"]').value)||0;
-    total -= total*diskon/100;
-    document.getElementById('totalMasuk').value = formatRupiah(total);
-  } else {
-    document.getElementById('totalKeluar').value = formatRupiah(total);
-  }
-}
+      <button type="button" onclick="kirimMasuk()">Simpan Transaksi Masuk</button>
+    </form>
 
-function togglePaymentFields(type,value){
-  document.getElementById('tunai'+capitalize(type)).classList.toggle('hidden',value!=='Tunai');
-  document.getElementById('transfer'+capitalize(type)).classList.toggle('hidden',value!=='Transfer');
-}
+    <!-- FORM KELUAR -->
+    <form id="formKeluar" style="display:none;">
+      <label>Penjualan</label>
+      <textarea id="keluar-penjualan" placeholder="Daftar barang yang dijual"></textarea>
 
-function formatRupiah(num){ return num.toLocaleString('id-ID', {minimumFractionDigits:0}); }
-function capitalize(str){ return str.charAt(0).toUpperCase()+str.slice(1); }
+      <label>Total (Rp)</label>
+      <input type="number" id="keluar-total" placeholder="0">
 
-// Submit handling
-let sending=false;
-function submitted(type){
-  if(sending) return;
-  sending=true;
-  const form = document.getElementById('form'+capitalize(type));
-  const submitBtn = document.getElementById('submit'+capitalize(type));
-  const status = document.getElementById('status');
+      <label>Metode Pembayaran</label>
+      <select id="keluar-metode">
+        <option value="Cash">Cash</option>
+        <option value="Transfer">Transfer</option>
+      </select>
 
-  status.textContent='Mengirim...';
-  status.style.opacity=1;
-  form.querySelectorAll('input,textarea,select,button').forEach(el=>el.classList.add('sending'));
-  submitBtn.textContent='Mengirim...';
-  form.dataset.submitted="true";
-}
+      <label>Nama Pembeli</label>
+      <input type="text" id="keluar-nama" placeholder="Nama pembeli">
 
-function iframeLoaded(){
-  document.querySelectorAll('form').forEach(form=>{
-    if(form.dataset.submitted==='true'){
-      const type = form.id.includes('Masuk')?'masuk':'keluar';
-      document.getElementById('status').textContent='Data berhasil dikirim!';
-      form.reset();
-      form.querySelectorAll('input,textarea,select,button').forEach(el=>el.classList.remove('sending'));
-      document.getElementById('submit'+capitalize(type)).textContent='Kirim';
-      form.dataset.submitted='false';
-      sending=false;
-      setTimeout(()=>{document.getElementById('status').style.opacity=0;},3000);
+      <label>Nomor Kontak</label>
+      <input type="text" id="keluar-nomor" placeholder="08xxxxxxxxxx">
+
+      <label>Kasir</label>
+      <input type="text" id="keluar-kasir" placeholder="Nama kasir">
+
+      <button type="button" onclick="kirimKeluar()">Simpan Transaksi Keluar</button>
+    </form>
+
+    <div id="pesan" class="success">Data berhasil dikirim!</div>
+  </div>
+
+  <script>
+    const SHEET_URL = "PASTE_WEBAPP_URL_HERE"; // 🔸 ganti dengan URL dari Apps Script
+
+    function showForm(jenis) {
+      document.getElementById('formMasuk').style.display = (jenis === 'masuk') ? 'block' : 'none';
+      document.getElementById('formKeluar').style.display = (jenis === 'keluar') ? 'block' : 'none';
+      document.getElementById('pesan').style.display = 'none';
     }
-  });
-}
-</script>
+
+    async function kirimMasuk() {
+      const data = {
+        type: "Masuk",
+        pembelian: document.getElementById("masuk-pembelian").value,
+        total: document.getElementById("masuk-total").value,
+        metode: document.getElementById("masuk-metode").value,
+        supplier: document.getElementById("masuk-supplier").value,
+        nomor: document.getElementById("masuk-nomor").value
+      };
+
+      await fetch(SHEET_URL, {
+        method: "POST",
+        body: JSON.stringify(data),
+        headers: { "Content-Type": "application/json" }
+      });
+
+      document.getElementById('formMasuk').reset();
+      document.getElementById('pesan').innerText = "Transaksi Masuk tersimpan!";
+      document.getElementById('pesan').style.display = 'block';
+    }
+
+    async function kirimKeluar() {
+      const data = {
+        type: "Keluar",
+        penjualan: document.getElementById("keluar-penjualan").value,
+        total: document.getElementById("keluar-total").value,
+        metode: document.getElementById("keluar-metode").value,
+        namaPembeli: document.getElementById("keluar-nama").value,
+        nomor: document.getElementById("keluar-nomor").value,
+        kasir: document.getElementById("keluar-kasir").value
+      };
+
+      await fetch(SHEET_URL, {
+        method: "POST",
+        body: JSON.stringify(data),
+        headers: { "Content-Type": "application/json" }
+      });
+
+      document.getElementById('formKeluar').reset();
+      document.getElementById('pesan').innerText = "Transaksi Keluar tersimpan!";
+      document.getElementById('pesan').style.display = 'block';
+    }
+  </script>
+</body>
+</html>
