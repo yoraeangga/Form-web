@@ -3,170 +3,165 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Form Transaksi Masuk & Keluar</title>
+  <title>Form Transaksi Masuk / Keluar</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: #f2f2f2;
-      margin: 0; padding: 0;
+      background: #f7f7f7;
+      padding: 20px;
     }
-    .container {
-      max-width: 600px;
-      margin: 30px auto;
+    h2 {
+      text-align: center;
+    }
+    form {
       background: white;
       padding: 20px;
       border-radius: 10px;
+      max-width: 500px;
+      margin: 20px auto;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
-    h2 { text-align: center; margin-bottom: 20px; }
-    label { display: block; margin-top: 10px; font-weight: bold; }
+    label {
+      display: block;
+      margin-top: 10px;
+      font-weight: bold;
+    }
     input, select, textarea {
       width: 100%;
       padding: 8px;
-      margin-top: 5px;
       border: 1px solid #ccc;
       border-radius: 5px;
     }
     button {
       margin-top: 15px;
-      width: 100%;
       padding: 10px;
-      background: #007bff;
-      color: white;
+      width: 100%;
+      background-color: #4CAF50;
       border: none;
+      color: white;
+      font-weight: bold;
       border-radius: 5px;
       cursor: pointer;
-      font-size: 16px;
     }
-    button:hover { background: #0056b3; }
+    button:hover {
+      background-color: #45a049;
+    }
     .switch {
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-      margin-bottom: 20px;
-    }
-    .success {
-      background: #d4edda;
-      color: #155724;
-      padding: 10px;
-      border-radius: 5px;
-      margin-top: 10px;
       text-align: center;
-      display: none;
+      margin-top: 20px;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h2>Form Transaksi</h2>
+  <h2>Form Transaksi</h2>
 
-    <div class="switch">
-      <button type="button" onclick="showForm('masuk')">Transaksi Masuk</button>
-      <button type="button" onclick="showForm('keluar')">Transaksi Keluar</button>
-    </div>
-
-    <!-- FORM MASUK -->
-    <form id="formMasuk">
-      <label>Pembelian</label>
-      <textarea id="masuk-pembelian" placeholder="Daftar barang yang dibeli"></textarea>
-
-      <label>Total (Rp)</label>
-      <input type="number" id="masuk-total" placeholder="0">
-
-      <label>Metode Pembayaran</label>
-      <select id="masuk-metode">
-        <option value="Cash">Cash</option>
-        <option value="Transfer">Transfer</option>
-      </select>
-
-      <label>Supplier</label>
-      <input type="text" id="masuk-supplier" placeholder="Nama supplier">
-
-      <label>Nomor Kontak</label>
-      <input type="text" id="masuk-nomor" placeholder="08xxxxxxxxxx">
-
-      <button type="button" onclick="kirimMasuk()">Simpan Transaksi Masuk</button>
-    </form>
-
-    <!-- FORM KELUAR -->
-    <form id="formKeluar" style="display:none;">
-      <label>Penjualan</label>
-      <textarea id="keluar-penjualan" placeholder="Daftar barang yang dijual"></textarea>
-
-      <label>Total (Rp)</label>
-      <input type="number" id="keluar-total" placeholder="0">
-
-      <label>Metode Pembayaran</label>
-      <select id="keluar-metode">
-        <option value="Cash">Cash</option>
-        <option value="Transfer">Transfer</option>
-      </select>
-
-      <label>Nama Pembeli</label>
-      <input type="text" id="keluar-nama" placeholder="Nama pembeli">
-
-      <label>Nomor Kontak</label>
-      <input type="text" id="keluar-nomor" placeholder="08xxxxxxxxxx">
-
-      <label>Kasir</label>
-      <input type="text" id="keluar-kasir" placeholder="Nama kasir">
-
-      <button type="button" onclick="kirimKeluar()">Simpan Transaksi Keluar</button>
-    </form>
-
-    <div id="pesan" class="success">Data berhasil dikirim!</div>
+  <div class="switch">
+    <button onclick="switchForm('masuk')">Transaksi Masuk</button>
+    <button onclick="switchForm('keluar')">Transaksi Keluar</button>
   </div>
 
+  <!-- FORM MASUK -->
+  <form id="formMasuk">
+    <h3>Transaksi Masuk</h3>
+    <label>No Transaksi</label>
+    <input type="text" id="masuk-no" placeholder="IN001" required>
+
+    <label>Tabel Pembelian</label>
+    <textarea id="masuk-pembelian" placeholder="Daftar barang dibeli"></textarea>
+
+    <label>Diskon (%)</label>
+    <input type="number" id="masuk-diskon" value="0">
+
+    <label>Total (Rp)</label>
+    <input type="number" id="masuk-total" required>
+
+    <label>Metode Pembayaran</label>
+    <select id="masuk-metode">
+      <option>Cash</option>
+      <option>Transfer</option>
+    </select>
+
+    <label>Supplier</label>
+    <input type="text" id="masuk-supplier">
+
+    <label>Nomor Kontak</label>
+    <input type="text" id="masuk-kontak">
+
+    <button type="button" onclick="kirimData('Masuk')">Kirim Data Masuk</button>
+  </form>
+
+  <!-- FORM KELUAR -->
+  <form id="formKeluar" style="display:none;">
+    <h3>Transaksi Keluar</h3>
+    <label>No Transaksi</label>
+    <input type="text" id="keluar-no" placeholder="OT001" required>
+
+    <label>Tabel Penjualan</label>
+    <textarea id="keluar-penjualan" placeholder="Daftar barang dijual"></textarea>
+
+    <label>Diskon (%)</label>
+    <input type="number" id="keluar-diskon" value="0">
+
+    <label>Total (Rp)</label>
+    <input type="number" id="keluar-total" required>
+
+    <label>Metode Pembayaran</label>
+    <select id="keluar-metode">
+      <option>Cash</option>
+      <option>Transfer</option>
+    </select>
+
+    <label>Nama Pembeli</label>
+    <input type="text" id="keluar-pembeli">
+
+    <label>Nomor Kontak</label>
+    <input type="text" id="keluar-kontak">
+
+    <label>Kasir</label>
+    <input type="text" id="keluar-kasir">
+
+    <button type="button" onclick="kirimData('Keluar')">Kirim Data Keluar</button>
+  </form>
+
   <script>
-    const SHEET_URL = "https://script.google.com/macros/s/AKfycbzse_68vIKalKsWzE5fYyPzPCNm8mQ0gNEwzc0m7OW2O1BYOplkBOpoNmXVFbe78UY/exec"; // 🔸 ganti dengan URL dari Apps Script
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzse_68vIKalKsWzE5fYyPzPCNm8mQ0gNEwzc0m7OW2O1BYOplkBOpoNmXVFbe78UY/exec";
 
-    function showForm(jenis) {
-      document.getElementById('formMasuk').style.display = (jenis === 'masuk') ? 'block' : 'none';
-      document.getElementById('formKeluar').style.display = (jenis === 'keluar') ? 'block' : 'none';
-      document.getElementById('pesan').style.display = 'none';
+    function switchForm(type) {
+      document.getElementById('formMasuk').style.display = (type === 'masuk') ? 'block' : 'none';
+      document.getElementById('formKeluar').style.display = (type === 'keluar') ? 'block' : 'none';
     }
 
-    async function kirimMasuk() {
-      const data = {
-        type: "Masuk",
-        pembelian: document.getElementById("masuk-pembelian").value,
-        total: document.getElementById("masuk-total").value,
-        metode: document.getElementById("masuk-metode").value,
-        supplier: document.getElementById("masuk-supplier").value,
-        nomor: document.getElementById("masuk-nomor").value
-      };
+    function kirimData(type) {
+      let data = {};
 
-      await fetch(SHEET_URL, {
-        method: "POST",
-        body: JSON.stringify(data),
-        headers: { "Content-Type": "application/json" }
-      });
+      if (type === "Masuk") {
+        data = {
+          jenis: "Masuk",
+          no: document.getElementById('masuk-no').value,
+          pembelian: document.getElementById('masuk-pembelian').value,
+          diskon: document.getElementById('masuk-diskon').value,
+          total: document.getElementById('masuk-total').value,
+          metode: document.getElementById('masuk-metode').value,
+          supplier: document.getElementById('masuk-supplier').value,
+          kontak: document.getElementById('masuk-kontak').value
+        };
+      } else {
+        data = {
+          jenis: "Keluar",
+          no: document.getElementById('keluar-no').value,
+          penjualan: document.getElementById('keluar-penjualan').value,
+          diskon: document.getElementById('keluar-diskon').value,
+          total: document.getElementById('keluar-total').value,
+          metode: document.getElementById('keluar-metode').value,
+          pembeli: document.getElementById('keluar-pembeli').value,
+          kontak: document.getElementById('keluar-kontak').value,
+          kasir: document.getElementById('keluar-kasir').value
+        };
+      }
 
-      document.getElementById('formMasuk').reset();
-      document.getElementById('pesan').innerText = "Transaksi Masuk tersimpan!";
-      document.getElementById('pesan').style.display = 'block';
-    }
-
-    async function kirimKeluar() {
-      const data = {
-        type: "Keluar",
-        penjualan: document.getElementById("keluar-penjualan").value,
-        total: document.getElementById("keluar-total").value,
-        metode: document.getElementById("keluar-metode").value,
-        namaPembeli: document.getElementById("keluar-nama").value,
-        nomor: document.getElementById("keluar-nomor").value,
-        kasir: document.getElementById("keluar-kasir").value
-      };
-
-      await fetch(SHEET_URL, {
-        method: "POST",
-        body: JSON.stringify(data),
-        headers: { "Content-Type": "application/json" }
-      });
-
-      document.getElementById('formKeluar').reset();
-      document.getElementById('pesan').innerText = "Transaksi Keluar tersimpan!";
-      document.getElementById('pesan').style.display = 'block';
+      fetch(SCRIPT_URL, { method: 'POST', body: new URLSearchParams(data) })
+        .then(res => alert('✅ Data berhasil dikirim ke Google Sheet!'))
+        .catch(err => alert('❌ Gagal kirim data: ' + err));
     }
   </script>
 </body>
