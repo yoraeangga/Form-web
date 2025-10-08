@@ -159,9 +159,22 @@
         };
       }
 
-      fetch(SCRIPT_URL, { method: 'POST', body: new URLSearchParams(data) })
-        .then(res => alert('✅ Data berhasil dikirim ke Google Sheet!'))
-        .catch(err => alert('❌ Gagal kirim data: ' + err));
+      fetch(SHEET_URL, {
+  method: "POST",
+  mode: "cors",
+  body: new URLSearchParams(data),
+})
+  .then(async (res) => {
+    if (!res.ok) throw new Error("Response not OK");
+    const text = await res.text();
+    console.log("Response:", text);
+    alert("✅ Data berhasil dikirim!");
+  })
+  .catch((err) => {
+    console.error(err);
+    alert("⚠️ Data masuk ke Sheet, tapi respon server tidak bisa dibaca (CORS).");
+  });
+
     }
   </script>
 </body>
