@@ -1,180 +1,754 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Form Transaksi Masuk / Keluar</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Form Transaksi — Masuk & Keluar</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f7f7f7;
-      padding: 20px;
+    :root{
+      --bg:#f4f8fb;
+      --card:#ffffff;
+      --accent:#2b9bd7;
+      --accent-2:#6ec1ff;
+      --muted:#6b7280;
+      --success:#16a34a;
+      --danger:#dc2626;
+      --glass: rgba(255,255,255,0.6);
+      --radius:12px;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
     }
-    h2 {
-      text-align: center;
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      background: linear-gradient(180deg,var(--bg),#eef6fb);
+      min-height:100vh;
+      color:#0f172a;
+      -webkit-font-smoothing:antialiased;
     }
-    form {
+
+    /* container */
+    .wrap{
+      max-width:980px;
+      margin:28px auto;
+      padding:20px;
+    }
+
+    /* header */
+    header.appbar{
+      display:flex;
+      align-items:center;
+      gap:16px;
+      margin-bottom:18px;
+    }
+    .logo{
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+    .brand {
+      height:48px;
+      width:48px;
+      background:linear-gradient(135deg,var(--accent),var(--accent-2));
+      border-radius:12px;
+      display:grid;
+      place-items:center;
+      color:white;
+      font-weight:700;
+      font-size:18px;
+      box-shadow: 0 6px 18px rgba(43,155,215,0.18);
+    }
+    h1 { margin:0; font-size:18px; letter-spacing:0.2px; }
+    p.lead { margin:0; font-size:13px; color:var(--muted) }
+
+    /* card */
+    .card{
+      background:var(--card);
+      border-radius:var(--radius);
+      box-shadow:0 8px 24px rgba(16,24,40,0.06);
+      padding:18px;
+      margin-top:14px;
+    }
+
+    /* menu */
+    .menu {
+      display:flex;
+      gap:12px;
+      margin-bottom:14px;
+      flex-wrap:wrap;
+    }
+    .btn {
+      border:0;
+      padding:10px 14px;
+      border-radius:10px;
+      background:transparent;
+      cursor:pointer;
+      font-weight:600;
+      color:var(--accent);
+      transition:all .18s;
+      box-shadow: inset 0 -1px 0 rgba(43,155,215,0.06);
+    }
+    .btn.active {
+      background:linear-gradient(90deg,var(--accent),var(--accent-2));
+      color:white;
+      box-shadow: 0 6px 20px rgba(43,155,215,0.18);
+    }
+
+    /* form layout */
+    .grid{
+      display:grid;
+      grid-template-columns: 1fr 380px;
+      gap:18px;
+    }
+    @media (max-width:900px){
+      .grid{ grid-template-columns: 1fr; }
+    }
+
+    .panel{
+      padding:14px;
+      border-radius:10px;
+      background: linear-gradient(180deg, rgba(43,155,215,0.04), rgba(110,193,255,0.02));
+      border: 1px solid rgba(43,155,215,0.06);
+    }
+
+    label { display:block; font-size:13px; color:var(--muted); margin-bottom:6px; }
+    input[type="text"], input[type="number"], select, textarea {
+      width:100%;
+      padding:10px 12px;
+      border-radius:10px;
+      border:1px solid rgba(15,23,42,0.06);
       background: white;
-      padding: 20px;
-      border-radius: 10px;
-      max-width: 500px;
-      margin: 20px auto;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      font-size:14px;
+      outline:none;
     }
-    label {
-      display: block;
-      margin-top: 10px;
-      font-weight: bold;
+    textarea { min-height:80px; resize:vertical; }
+
+    /* table barang */
+    .items-table {
+      width:100%;
+      border-collapse:collapse;
+      margin-top:12px;
+      background:white;
+      border-radius:10px;
+      overflow:hidden;
+      box-shadow:0 4px 14px rgba(2,6,23,0.04);
     }
-    input, select, textarea {
-      width: 100%;
-      padding: 8px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
+    .items-table thead { background: linear-gradient(90deg,var(--accent),var(--accent-2)); color:white; }
+    .items-table th, .items-table td {
+      padding:10px 12px;
+      text-align:left;
+      font-size:13px;
+      border-bottom:1px solid rgba(15,23,42,0.04);
     }
-    button {
-      margin-top: 15px;
-      padding: 10px;
-      width: 100%;
-      background-color: #4CAF50;
-      border: none;
-      color: white;
-      font-weight: bold;
-      border-radius: 5px;
-      cursor: pointer;
+    .items-table tbody tr:last-child td { border-bottom:none; }
+    .muted { color:var(--muted); font-size:13px; }
+
+    .small {
+      font-size:13px;
+      padding:6px 8px;
     }
-    button:hover {
-      background-color: #45a049;
+
+    .actions { display:flex; gap:8px; }
+
+    .btn-outline {
+      background:transparent;
+      border:1px solid rgba(15,23,42,0.06);
+      padding:8px 10px;
+      border-radius:8px;
+      cursor:pointer;
+      font-weight:600;
     }
-    .switch {
-      text-align: center;
-      margin-top: 20px;
+
+    .add-btn {
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:10px 12px;
+      background:linear-gradient(90deg,var(--accent),var(--accent-2));
+      color:white;
+      border-radius:10px;
+      border:0;
+      cursor:pointer;
+      box-shadow: 0 8px 20px rgba(43,155,215,0.12);
+      font-weight:700;
+    }
+
+    /* totals card */
+    .summary {
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      margin-top:6px;
+    }
+    .row {
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      padding:8px 10px;
+      border-radius:8px;
+      background:rgba(15,23,42,0.02);
+    }
+    .total { font-size:20px; font-weight:800; color:var(--accent); }
+
+    /* modal */
+    .modal-backdrop {
+      position:fixed;
+      inset:0;
+      display:none;
+      background:rgba(2,6,23,0.45);
+      z-index:60;
+      align-items:center;
+      justify-content:center;
+      padding:18px;
+    }
+    .modal {
+      width:100%;
+      max-width:560px;
+      background:var(--card);
+      border-radius:12px;
+      padding:18px;
+      box-shadow:0 18px 40px rgba(2,6,23,0.28);
+    }
+    .modal h3 { margin:0 0 8px 0; }
+
+    /* submit button */
+    .submit-row {
+      display:flex;
+      gap:12px;
+      align-items:center;
+      margin-top:12px;
+    }
+    .submit-btn {
+      background:linear-gradient(90deg,var(--accent),var(--accent-2));
+      color:white;
+      border:0;
+      padding:12px 16px;
+      border-radius:12px;
+      font-weight:800;
+      cursor:pointer;
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      transition:all .18s;
+    }
+    .submit-btn[disabled]{
+      opacity:0.6;
+      transform:scale(.995);
+      cursor:progress;
+    }
+
+    .spinner {
+      width:18px;
+      height:18px;
+      border-radius:50%;
+      border:2px solid rgba(255,255,255,0.18);
+      border-top-color:rgba(255,255,255,0.9);
+      animation:spin .9s linear infinite;
+    }
+    @keyframes spin{to{transform:rotate(360deg)}}
+
+    /* notifications */
+    .toast {
+      position:fixed;
+      right:20px;
+      bottom:20px;
+      background:white;
+      padding:12px 14px;
+      border-radius:10px;
+      box-shadow:0 12px 30px rgba(2,6,23,0.16);
+      display:none;
+      z-index:80;
+      min-width:220px;
+      font-weight:700;
+    }
+    .toast.show{ display:block; }
+
+    /* fade effect while submitting */
+    .faded{ opacity:0.56; pointer-events:none; transform:scale(.998); transition:all .18s; }
+
+    /* responsive tweaks */
+    @media (max-width:600px){
+      .brand{ height:40px; width:40px; font-size:16px; border-radius:10px }
+      .card{ padding:12px }
+      .items-table th, .items-table td{ padding:8px }
     }
   </style>
 </head>
 <body>
-  <h2>Form Transaksi</h2>
+  <div class="wrap">
+    <header class="appbar">
+      <div class="logo">
+        <div class="brand">TF</div>
+        <div>
+          <h1>Form Transaksi</h1>
+          <p class="lead">Masuk & Keluar — terhubung ke Google Sheets</p>
+        </div>
+      </div>
+    </header>
 
-  <div class="switch">
-    <button onclick="switchForm('masuk')">Transaksi Masuk</button>
-    <button onclick="switchForm('keluar')">Transaksi Keluar</button>
+    <div class="card">
+      <div class="menu">
+        <button id="btnMasuk" class="btn active">Transaksi Masuk</button>
+        <button id="btnKeluar" class="btn">Transaksi Keluar</button>
+      </div>
+
+      <div class="grid">
+        <!-- LEFT: form + tabel -->
+        <div>
+          <div class="panel" id="formPanel">
+            <!-- form fields -->
+            <label>No Transaksi</label>
+            <input id="noTrans" type="text" placeholder="IN001 / OT001" />
+
+            <label>Metode Pembayaran</label>
+            <select id="metode">
+              <option>Cash</option>
+              <option>Transfer</option>
+            </select>
+
+            <div style="display:flex; gap:10px; margin-top:10px;">
+              <div style="flex:1;">
+                <label>Nama Supplier / Pembeli</label>
+                <input id="namaPihak" type="text" placeholder="Supplier atau Nama Pembeli" />
+              </div>
+              <div style="width:160px;">
+                <label>Nomor Kontak</label>
+                <input id="nomorKontak" type="text" placeholder="08xxxx" />
+              </div>
+            </div>
+
+            <div style="margin-top:12px; display:flex; gap:10px; align-items:center;">
+              <label style="margin:0; min-width:80px;">Diskon (%)</label>
+              <input id="diskon" type="number" min="0" max="100" value="0" style="width:120px;" />
+              <div style="flex:1"></div>
+              <button id="addItemBtn" class="add-btn" type="button">+ Tambah Barang</button>
+            </div>
+
+            <!-- table barang -->
+            <table class="items-table" id="itemsTable" aria-label="Tabel barang">
+              <thead>
+                <tr>
+                  <th style="width:28%;">Nama Barang</th>
+                  <th style="width:12%;">Kode</th>
+                  <th style="width:10%;">Jumlah</th>
+                  <th style="width:12%;">Satuan</th>
+                  <th style="width:18%;">Harga (Rp)</th>
+                  <th style="width:12%;">Total (Rp)</th>
+                  <th style="width:8%;">Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="itemsBody">
+                <!-- rows injected here -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- RIGHT: summary + submit -->
+        <div>
+          <div class="panel">
+            <h3 style="margin:0 0 8px 0;">Ringkasan</h3>
+
+            <div class="summary">
+              <div class="row">
+                <div class="muted">Subtotal</div>
+                <div id="subtotalText">Rp 0</div>
+              </div>
+              <div class="row">
+                <div class="muted">Diskon (%)</div>
+                <div id="diskonText">0%</div>
+              </div>
+              <div class="row">
+                <div class="muted">Total Setelah Diskon</div>
+                <div class="total" id="grandTotal">Rp 0</div>
+              </div>
+
+              <div style="margin-top:8px;">
+                <label>Catatan (opsional)</label>
+                <textarea id="catatan" placeholder="Keterangan transaksi..."></textarea>
+              </div>
+
+              <div class="submit-row">
+                <button id="submitBtn" class="submit-btn">
+                  <span id="submitLabel">Kirim Data</span>
+                </button>
+                <button id="resetBtn" class="btn-outline">Reset</button>
+              </div>
+            </div>
+          </div>
+
+          <div style="margin-top:12px; text-align:center; color:var(--muted); font-size:13px;">
+            Pastikan Apps Script sudah di-deploy dan dapat diakses (Anyone).
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 
-  <!-- FORM MASUK -->
-  <form id="formMasuk">
-    <h3>Transaksi Masuk</h3>
-    <label>No Transaksi</label>
-    <input type="text" id="masuk-no" placeholder="IN001" required>
+  <!-- modal add item -->
+  <div class="modal-backdrop" id="modalBackdrop">
+    <div class="modal" role="dialog" aria-modal="true">
+      <h3>Tambah Barang</h3>
+      <div style="display:grid; gap:10px; margin-top:8px;">
+        <div>
+          <label>Nama Barang</label>
+          <input id="m_nama" type="text" />
+        </div>
+        <div>
+          <label>Kode Barang</label>
+          <input id="m_kode" type="text" />
+        </div>
+        <div style="display:flex; gap:8px;">
+          <div style="flex:1;">
+            <label>Jumlah</label>
+            <input id="m_jumlah" type="number" min="0" value="1" />
+          </div>
+          <div style="width:140px;">
+            <label>Satuan</label>
+            <select id="m_satuan">
+              <option>Pcs</option>
+              <option>Pak</option>
+              <option>Dus</option>
+              <option>Kg</option>
+              <option>Lusin</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label>Harga (Rp)</label>
+          <input id="m_harga" type="number" min="0" value="0" />
+        </div>
 
-    <label>Tabel Pembelian</label>
-    <textarea id="masuk-pembelian" placeholder="Daftar barang dibeli"></textarea>
+        <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:8px;">
+          <button id="modalCancel" class="btn-outline">Batal</button>
+          <button id="modalSave" class="add-btn">Simpan Barang</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
-    <label>Diskon (%)</label>
-    <input type="number" id="masuk-diskon" value="0">
-
-    <label>Total (Rp)</label>
-    <input type="number" id="masuk-total" required>
-
-    <label>Metode Pembayaran</label>
-    <select id="masuk-metode">
-      <option>Cash</option>
-      <option>Transfer</option>
-    </select>
-
-    <label>Supplier</label>
-    <input type="text" id="masuk-supplier">
-
-    <label>Nomor Kontak</label>
-    <input type="text" id="masuk-kontak">
-
-    <button type="button" onclick="kirimData('Masuk')">Kirim Data Masuk</button>
-  </form>
-
-  <!-- FORM KELUAR -->
-  <form id="formKeluar" style="display:none;">
-    <h3>Transaksi Keluar</h3>
-    <label>No Transaksi</label>
-    <input type="text" id="keluar-no" placeholder="OT001" required>
-
-    <label>Tabel Penjualan</label>
-    <textarea id="keluar-penjualan" placeholder="Daftar barang dijual"></textarea>
-
-    <label>Diskon (%)</label>
-    <input type="number" id="keluar-diskon" value="0">
-
-    <label>Total (Rp)</label>
-    <input type="number" id="keluar-total" required>
-
-    <label>Metode Pembayaran</label>
-    <select id="keluar-metode">
-      <option>Cash</option>
-      <option>Transfer</option>
-    </select>
-
-    <label>Nama Pembeli</label>
-    <input type="text" id="keluar-pembeli">
-
-    <label>Nomor Kontak</label>
-    <input type="text" id="keluar-kontak">
-
-    <label>Kasir</label>
-    <input type="text" id="keluar-kasir">
-
-    <button type="button" onclick="kirimData('Keluar')">Kirim Data Keluar</button>
-  </form>
+  <div class="toast" id="toast"></div>
 
   <script>
+    /* =================
+       Config
+       ================= */
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzse_68vIKalKsWzE5fYyPzPCNm8mQ0gNEwzc0m7OW2O1BYOplkBOpoNmXVFbe78UY/exec";
 
-    function switchForm(type) {
-      document.getElementById('formMasuk').style.display = (type === 'masuk') ? 'block' : 'none';
-      document.getElementById('formKeluar').style.display = (type === 'keluar') ? 'block' : 'none';
+    /* =================
+       State
+       ================= */
+    let mode = "Masuk"; // "Masuk" or "Keluar"
+    const items = []; // {id, nama, kode, jumlah, satuan, harga, total}
+
+    /* =================
+       Elements
+       ================= */
+    const btnMasuk = document.getElementById('btnMasuk');
+    const btnKeluar = document.getElementById('btnKeluar');
+    const noTrans = document.getElementById('noTrans');
+    const metode = document.getElementById('metode');
+    const namaPihak = document.getElementById('namaPihak');
+    const nomorKontak = document.getElementById('nomorKontak');
+    const diskonEl = document.getElementById('diskon');
+    const itemsBody = document.getElementById('itemsBody');
+    const subtotalText = document.getElementById('subtotalText');
+    const diskonText = document.getElementById('diskonText');
+    const grandTotal = document.getElementById('grandTotal');
+    const addItemBtn = document.getElementById('addItemBtn');
+    const modalBackdrop = document.getElementById('modalBackdrop');
+    const modalSave = document.getElementById('modalSave');
+    const modalCancel = document.getElementById('modalCancel');
+    const m_nama = document.getElementById('m_nama');
+    const m_kode = document.getElementById('m_kode');
+    const m_jumlah = document.getElementById('m_jumlah');
+    const m_satuan = document.getElementById('m_satuan');
+    const m_harga = document.getElementById('m_harga');
+    const submitBtn = document.getElementById('submitBtn');
+    const submitLabel = document.getElementById('submitLabel');
+    const resetBtn = document.getElementById('resetBtn');
+    const toast = document.getElementById('toast');
+    const formPanel = document.getElementById('formPanel');
+    const catatan = document.getElementById('catatan');
+
+    /* =================
+       Helpers
+       ================= */
+    function uid() { return Math.random().toString(36).slice(2,9); }
+    function formatRp(n){
+      n = Number(n) || 0;
+      return 'Rp ' + n.toLocaleString('id-ID');
+    }
+    function recalc(){
+      let subtotal = 0;
+      items.forEach(it => subtotal += Number(it.total));
+      const disc = Math.max(0, Number(diskonEl.value) || 0);
+      const after = Math.round(subtotal * (1 - disc/100));
+      subtotalText.textContent = formatRp(subtotal);
+      diskonText.textContent = disc + '%';
+      grandTotal.textContent = formatRp(after);
     }
 
-    function kirimData(type) {
-      let data = {};
-
-      if (type === "Masuk") {
-        data = {
-          jenis: "Masuk",
-          no: document.getElementById('masuk-no').value,
-          pembelian: document.getElementById('masuk-pembelian').value,
-          diskon: document.getElementById('masuk-diskon').value,
-          total: document.getElementById('masuk-total').value,
-          metode: document.getElementById('masuk-metode').value,
-          supplier: document.getElementById('masuk-supplier').value,
-          kontak: document.getElementById('masuk-kontak').value
-        };
-      } else {
-        data = {
-          jenis: "Keluar",
-          no: document.getElementById('keluar-no').value,
-          penjualan: document.getElementById('keluar-penjualan').value,
-          diskon: document.getElementById('keluar-diskon').value,
-          total: document.getElementById('keluar-total').value,
-          metode: document.getElementById('keluar-metode').value,
-          pembeli: document.getElementById('keluar-pembeli').value,
-          kontak: document.getElementById('keluar-kontak').value,
-          kasir: document.getElementById('keluar-kasir').value
-        };
+    function renderItems(){
+      itemsBody.innerHTML = '';
+      if(items.length === 0){
+        itemsBody.innerHTML = `<tr><td colspan="7" class="muted small" style="text-align:center; padding:14px;">Belum ada barang. Klik "Tambah Barang".</td></tr>`;
+        recalc();
+        return;
       }
+      items.forEach(it => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${escapeHtml(it.nama)}</td>
+          <td>${escapeHtml(it.kode)}</td>
+          <td>${it.jumlah}</td>
+          <td>${escapeHtml(it.satuan)}</td>
+          <td>${formatRp(it.harga)}</td>
+          <td>${formatRp(it.total)}</td>
+          <td>
+            <div class="actions">
+              <button class="btn-outline small" data-act="edit" data-id="${it.id}">Edit</button>
+              <button class="btn-outline small" data-act="del" data-id="${it.id}">Hapus</button>
+            </div>
+          </td>
+        `;
+        itemsBody.appendChild(tr);
+      });
 
-      fetch(SHEET_URL, {
-  method: "POST",
-  mode: "cors",
-  body: new URLSearchParams(data),
-})
-  .then(async (res) => {
-    if (!res.ok) throw new Error("Response not OK");
-    const text = await res.text();
-    console.log("Response:", text);
-    alert("✅ Data berhasil dikirim!");
-  })
-  .catch((err) => {
-    console.error(err);
-    alert("⚠️ Data masuk ke Sheet, tapi respon server tidak bisa dibaca (CORS).");
-  });
+      // attach events
+      itemsBody.querySelectorAll('button[data-act]').forEach(btn => {
+        btn.addEventListener('click', e => {
+          const act = btn.getAttribute('data-act');
+          const id = btn.getAttribute('data-id');
+          if(act === 'edit') openEditItem(id);
+          if(act === 'del') {
+            const idx = items.findIndex(x=>x.id===id);
+            if(idx>-1){ items.splice(idx,1); renderItems(); }
+          }
+        });
+      });
 
+      recalc();
+    }
+
+    function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' })[c]); }
+
+    /* =================
+       Modal behaviors
+       ================= */
+    function openModal(){
+      m_nama.value=''; m_kode.value=''; m_jumlah.value=1; m_satuan.value='Pcs'; m_harga.value=0;
+      modalBackdrop.style.display='flex';
+    }
+    function closeModal(){ modalBackdrop.style.display='none'; }
+
+    addItemBtn.addEventListener('click', ()=> {
+      openModal();
+    });
+    modalCancel.addEventListener('click', closeModal);
+
+    // Save new item
+    modalSave.addEventListener('click', ()=>{
+      const nama = m_nama.value.trim();
+      const kode = m_kode.value.trim();
+      const jumlah = Number(m_jumlah.value) || 0;
+      const satuan = m_satuan.value;
+      const harga = Number(m_harga.value) || 0;
+      if(!nama || jumlah <= 0){ alert('Nama dan jumlah harus diisi dengan benar.'); return; }
+      const total = Math.round(jumlah * harga);
+      const obj = { id: uid(), nama, kode, jumlah, satuan, harga, total };
+      items.push(obj);
+      closeModal();
+      renderItems();
+    });
+
+    // edit item
+    function openEditItem(id){
+      const it = items.find(x=>x.id===id);
+      if(!it) return;
+      m_nama.value = it.nama;
+      m_kode.value = it.kode;
+      m_jumlah.value = it.jumlah;
+      m_satuan.value = it.satuan;
+      m_harga.value = it.harga;
+      modalBackdrop.style.display='flex';
+      // override save handler temporarily
+      const handler = function(){
+        it.nama = m_nama.value.trim();
+        it.kode = m_kode.value.trim();
+        it.jumlah = Number(m_jumlah.value) || 0;
+        it.satuan = m_satuan.value;
+        it.harga = Number(m_harga.value) || 0;
+        it.total = Math.round(it.jumlah * it.harga);
+        modalSave.removeEventListener('click', handler);
+        modalSave.addEventListener('click', saveHandler);
+        closeModal();
+        renderItems();
+      };
+      // swap handlers
+      const saveHandler = modalSave._defaultHandler;
+      // remove existing listeners and set new
+      modalSave.removeEventListener('click', modalSave._defaultHandler);
+      modalSave.addEventListener('click', handler);
+      // store to restore later
+      modalSave._tempHandler = handler;
+    }
+
+    // ensure modalSave has a stable default handler for new items
+    (function attachDefaultModalSave(){
+      function defaultSave(){
+        // default path already defined above as modalSave click
+        // but we also keep a reference to restore
+      }
+      modalSave._defaultHandler = function(){
+        // when called this default handler will call the code defined earlier (same as modalSave click)
+        // nothing here; main logic defined in modalSave event attached above
+      };
+    })();
+
+    /* =================
+       Mode switch
+       ================= */
+    btnMasuk.addEventListener('click', ()=> setMode('Masuk'));
+    btnKeluar.addEventListener('click', ()=> setMode('Keluar'));
+
+    function setMode(m){
+      mode = m;
+      if(m === 'Masuk'){
+        btnMasuk.classList.add('active'); btnKeluar.classList.remove('active');
+        addItemBtn.textContent = '+ Tambah Barang';
+        // label hints
+        document.querySelector('label[for="noTrans"]')?.remove();
+      } else {
+        btnKeluar.classList.add('active'); btnMasuk.classList.remove('active');
+        addItemBtn.textContent = '+ Tambah Barang';
+      }
+      // clear form a bit
+      noTrans.value = (m==='Masuk')? '' : '';
+      namaPihak.placeholder = (m==='Masuk') ? 'Supplier' : 'Nama Pembeli';
+      renderItems();
+    }
+
+    /* =================
+       Reactivity
+       ================= */
+    diskonEl.addEventListener('input', recalc);
+    // reset
+    resetBtn.addEventListener('click', ()=>{
+      if(!confirm('Reset semua field dan tabel?')) return;
+      noTrans.value=''; namaPihak.value=''; nomorKontak.value=''; items.splice(0, items.length); renderItems(); catatan.value=''; diskonEl.value=0; recalc();
+      showToast('Form di-reset', 1800);
+    });
+
+    /* =================
+       Submit logic
+       ================= */
+    function setSubmitting(flag){
+      if(flag){
+        submitBtn.setAttribute('disabled','true');
+        submitLabel.innerHTML = '<span class="spinner"></span> Mengirim...';
+        formPanel.classList.add('faded');
+      } else {
+        submitBtn.removeAttribute('disabled');
+        submitLabel.textContent = 'Kirim Data';
+        formPanel.classList.remove('faded');
+      }
+    }
+
+    function showToast(msg, ms=2500){
+      toast.textContent = msg;
+      toast.classList.add('show');
+      setTimeout(()=> toast.classList.remove('show'), ms);
+    }
+
+    submitBtn.addEventListener('click', async ()=>{
+      // validate
+      if(items.length === 0){ alert('Tambahkan minimal 1 barang.'); return; }
+      const no = noTrans.value.trim() || (mode==='Masuk' ? 'IN001' : 'OT001');
+      const pihak = namaPihak.value.trim();
+      if(!pihak){ alert('Isi Supplier / Nama Pembeli.'); return; }
+      const kontak = nomorKontak.value.trim();
+      // prepare payload
+      const payload = {
+        jenis: mode === 'Masuk' ? 'Masuk' : 'Keluar',
+        no: no,
+        diskon: Number(diskonEl.value) || 0,
+        total: Number( (function(){ // compute total after discount
+          let s=0; items.forEach(it=> s += Number(it.total));
+          const disc = Math.max(0, Number(diskonEl.value) || 0);
+          return Math.round(s * (1 - disc/100));
+        })()),
+        metode: metode.value,
+        kontak: kontak,
+        // for Masuk we use 'pembelian', for Keluar 'penjualan'
+        pembelian: JSON.stringify(items),
+        penjualan: JSON.stringify(items),
+        supplier: (mode==='Masuk') ? pihak : '',
+        pembeli: (mode==='Keluar') ? pihak : '',
+        kasir: (mode==='Keluar') ? '' : '',
+        catatan: catatan.value || ''
+      };
+
+      // disable + animate
+      setSubmitting(true);
+
+      try{
+        // Use URLSearchParams so Apps Script e.parameter picks up keys
+        const body = new URLSearchParams();
+        for(const k in payload){
+          if(payload[k] !== undefined && payload[k] !== null) body.append(k, payload[k]);
+        }
+
+        const res = await fetch(SCRIPT_URL, {
+          method: 'POST',
+          mode: 'cors',
+          body
+        });
+
+        // read text: Apps Script returns JSON; check ok
+        const text = await res.text();
+        // try parse
+        try {
+          const j = JSON.parse(text || '{}');
+          if(j && j.status === 'success'){
+            showToast('✅ Data berhasil dikirim', 2800);
+            // reset form partially
+            items.splice(0, items.length);
+            renderItems();
+            noTrans.value = ''; namaPihak.value=''; nomorKontak.value=''; catatan.value='';
+          } else {
+            // not explicit success -> still may have worked
+            showToast('⚠️ Respon server tidak pasti, cek Sheet', 3000);
+          }
+        } catch(errJson) {
+          // cannot parse -> but server might have accepted
+          showToast('⚠️ Respon tidak parseable. Cek Sheet.', 3000);
+        }
+      } catch (err){
+        console.error('Submit error', err);
+        // fallback message - but data may still be in sheet (rare)
+        showToast('❌ Gagal kirim — periksa koneksi atau Apps Script.', 3600);
+      } finally {
+        setSubmitting(false);
+      }
+    });
+
+    // initial render
+    setMode('Masuk');
+    renderItems();
+
+    // close modal when clicking outside
+    modalBackdrop.addEventListener('click', (ev)=>{
+      if(ev.target === modalBackdrop) closeModal();
+    });
+
+    // keyboard: ESC close modal
+    document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape') closeModal(); });
+
+    // small UX: when save modal pressed earlier, the handler was attached directly; ensure default save works:
+    // If modalSave has no attached listener (edge case), attach fallback to add new item
+    if(!modalSave.onclick){
+      modalSave.addEventListener('click', ()=>{ /* handled above */ });
     }
   </script>
 </body>
