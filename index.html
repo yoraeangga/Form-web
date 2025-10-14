@@ -1,24 +1,41 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Transaksi Barang</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Transaksi — Menu</title>
+  <!-- Tailwind via CDN untuk tampilan cepat -->
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-100 flex flex-col items-center justify-center min-h-screen">
-  <div class="text-center">
-    <h1 class="text-3xl font-bold mb-8 text-gray-800">📦 Transaksi Barang</h1>
-    <div class="space-y-4">
-      <button onclick="location.href='transaksi.html?type=masuk'"
-        class="w-64 bg-green-600 text-white py-4 rounded-xl shadow hover:bg-green-700 transition">
-        🟢 Transaksi Masuk
-      </button><br>
-      <button onclick="location.href='transaksi.html?type=keluar'"
-        class="w-64 bg-red-600 text-white py-4 rounded-xl shadow hover:bg-red-700 transition">
-        🔴 Transaksi Keluar
-      </button>
-    </div>
-  </div>
+<body class="min-h-screen bg-slate-50 flex items-center justify-center p-6">
+  <main class="w-full max-w-xl bg-white rounded-2xl shadow-lg p-8">
+    <header class="flex items-center gap-4 mb-6">
+      <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-sky-500 to-sky-300 flex items-center justify-center text-white font-bold text-lg">TF</div>
+      <div>
+        <h1 class="text-2xl font-semibold text-slate-800">Form Transaksi</h1>
+        <p class="text-sm text-slate-500">Pilih jenis transaksi untuk mulai memasukkan data.</p>
+      </div>
+    </header>
+
+    <section class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <a href="masuk.html" class="block p-5 rounded-xl bg-white border hover:shadow-lg transition flex flex-col items-start gap-3">
+        <div class="flex items-center justify-center h-12 w-12 rounded-lg bg-green-600 text-white font-bold">IN</div>
+        <h2 class="text-lg font-semibold text-slate-800">Transaksi Masuk</h2>
+        <p class="text-sm text-slate-500">Pembelian / penerimaan barang — tambah barang manual.</p>
+      </a>
+
+      <a href="keluar.html" class="block p-5 rounded-xl bg-white border hover:shadow-lg transition flex flex-col items-start gap-3">
+        <div class="flex items-center justify-center h-12 w-12 rounded-lg bg-red-600 text-white font-bold">OT</div>
+        <h2 class="text-lg font-semibold text-slate-800">Transaksi Keluar</h2>
+        <p class="text-sm text-slate-500">Penjualan / pengeluaran barang — pilih dari stok yang tersedia.</p>
+      </a>
+    </section>
+
+    <footer class="mt-6 text-center text-sm text-slate-400">
+      <div>Terhubung ke Google Sheets — pastikan Apps Script sudah dideploy.</div>
+      <div class="mt-2">Versi percobaan · Simpan perubahan HTML ke repo untuk testing</div>
+    </footer>
+  </main>
 </body>
 </html>
+
