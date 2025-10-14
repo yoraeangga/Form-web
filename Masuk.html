@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Transaksi Masuk</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-slate-50 p-4 flex flex-col items-center">
+  <main class="w-full max-w-3xl bg-white rounded-2xl shadow-lg p-6 mt-4">
+    <h1 class="text-2xl font-bold mb-6 text-slate-800">Transaksi Masuk</h1>
+
+    <!-- Form utama -->
+    <div class="space-y-4">
+      <div>
+        <label class="block text-sm font-medium text-slate-700">Supplier</label>
+        <input id="supplier" type="text" class="w-full p-2 border rounded-lg" placeholder="Nama supplier..." />
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-slate-700">Kontak Supplier</label>
+        <input id="kontak" type="text" class="w-full p-2 border rounded-lg" placeholder="Nomor telepon..." />
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-slate-700">Metode Pembayaran</label>
+        <select id="metode" class="w-full p-2 border rounded-lg">
+          <option value="Tunai">Tunai</option>
+          <option value="Transfer">Transfer</option>
+        </select>
+      </div>
+
+      <div id="transferFields" class="hidden grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <input id="bank" placeholder="Nama Bank" class="p-2 border rounded-lg" />
+        <input id="atasNama" placeholder="Atas Nama" class="p-2 border rounded-lg" />
+        <input id="rekening" placeholder="No Rekening" class="p-2 border rounded-lg" />
+      </div>
+    </div>
+
+    <hr class="my-6" />
+
+    <!-- Tabel Barang -->
+    <h2 class="text-lg font-semibold mb-2 text-slate-800">Daftar Barang</h2>
+    <div class="overflow-x-auto">
+      <table class="min-w-full border text-sm">
+        <thead class="bg-slate-100 text-slate-700">
+          <tr>
+            <th class="border p-2">Kode</th>
+            <th class="border p-2">Nama</th>
+            <th class="border p-2">Jumlah</th>
+            <th class="border p-2">Satuan</th>
+            <th class="border p-2">Harga</th>
+            <th class="border p-2">Diskon (%)</th>
+            <th class="border p-2">Subtotal</th>
+          </tr>
+        </thead>
+        <tbody id="tabelBarang"></tbody>
+      </table>
+    </div>
+
+    <button id="btnTambah" class="mt-4 px-4 py-2 bg-sky-600 text-white rounded-lg hover:bg-sky-700">+ Tambah Barang</button>
+
+    <div class="mt-4 text-right text-lg font-semibold text-slate-800">Total: Rp <span id="total">0</span></div>
+
+    <div class="mt-6 flex justify-between">
+      <a href="index.html" class="text-slate-500 hover:underline">← Kembali</a>
+      <button id="btnSubmit" class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">Kirim</button>
+    </div>
+  </main>
+
+  <!-- Modal tambah barang -->
+  <div id="modal" class="fixed inset-0 bg-black/40 hidden items-center justify-center">
+    <div class="bg-white rounded-xl shadow-lg p-6 w-full max-w-sm">
+      <h3 class="text-lg font-semibold mb-4 text-slate-800">Tambah Barang</h3>
+      <div class="space-y-3">
+        <input id="namaBarang" class="w-full p-2 border rounded-lg" placeholder="Nama Barang" />
+        <input id="jumlah" type="number" class="w-full p-2 border rounded-lg" placeholder="Jumlah" />
+        <input id="satuan" class="w-full p-2 border rounded-lg" placeholder="Satuan (pcs, dus, dll)" />
+        <input id="harga" type="number" class="w-full p-2 border rounded-lg" placeholder="Harga per unit" />
+        <input id="diskon" type="number" class="w-full p-2 border rounded-lg" placeholder="Diskon (%)" />
+      </div>
+      <div class="mt-4 flex justify-end gap-3">
+        <button id="batal" class="px-3 py-1.5 bg-slate-200 rounded-lg hover:bg-slate-300">Batal</button>
+        <button id="simpanBarang" class="px-4 py-1.5 bg-sky-600 text-white rounded-lg hover:bg-sky-700">Simpan</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notifikasi -->
+  <div id="toast" class="fixed bottom-4 right-4 hidden bg-green-600 text-white px-4 py-2 rounded-lg shadow-lg">Data berhasil dikirim!</div>
+
+  <script>
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzse_68vIKalKsWzE5fYyPzPCNm8mQ0gNEwzc0m7OW2O1BYOplkBOpoNmXVFbe78UY/exec";
+
+    const metode = document.getElementById("metode");
+    const transferFields = document.getElementById("transferFields");
+    metode.addEventListener("change", () => {
+      transferFields.classList.toggle("hidden", metode.value !== "Transfer");
+    });
+
+    const tabel = document.getElementById("tabelBarang");
+    const totalSpan = document.getElementById("total");
+    let barangList = [];
+    let kodeUrut = 1;
+
+    function renderBarang() {
+      tabel.innerHTML = "";
+      let total = 0;
+      barangList.forEach(b => {
+        total += b.subtotal;
+        const row = `<tr>
+          <td class='border p-1 text-center'>${b.kode}</td>
+          <td class='border p-1'>${b.nama}</td>
+          <td class='border p-1 text-center'>${b.jumlah}</td>
+          <td class='border p-1 text-center'>${b.satuan}</td>
+          <td class='border p-1 text-right'>${b.harga.toLocaleString()}</td>
+          <td class='border p-1 text-center'>${b.diskon}</td>
+          <td class='border p-1 text-right'>${b.subtotal.toLocaleString()}</td>
+        </tr>`;
+        tabel.insertAdjacentHTML("beforeend", row);
+      });
+      totalSpan.textContent = total.toLocaleString();
+    }
+
+    document.getElementById("btnTambah").onclick = () => {
+      document.getElementById("modal").classList.remove("hidden");
+    };
+    document.getElementById("batal").onclick = () => {
+      document.getElementById("modal").classList.add("hidden");
+    };
+    document.getElementById("simpanBarang").onclick = () => {
+      const nama = namaBarang.value.trim();
+      const jumlah = +document.getElementById("jumlah").value || 0;
+      const satuan = satuan.value.trim();
+      const harga = +document.getElementById("harga").value || 0;
+      const diskon = +document.getElementById("diskon").value || 0;
+      const subtotal = Math.round(jumlah * harga * (1 - diskon/100));
+      if(!nama || jumlah<=0) return alert("Lengkapi data barang!");
+      barangList.push({kode:`BRG${String(kodeUrut++).padStart(3,"0")}`, nama, jumlah, satuan, harga, diskon, subtotal});
+      renderBarang();
+      document.getElementById("modal").classList.add("hidden");
+    };
+
+    document.getElementById("btnSubmit").onclick = async () => {
+      if(barangList.length === 0) return alert("Tambahkan minimal 1 barang!");
+      const data = {
+        sheet: "Masuk",
+        supplier: supplier.value,
+        kontak: kontak.value,
+        metode: metode.value,
+        bank: bank.value || "",
+        atasNama: atasNama.value || "",
+        rekening: rekening.value || "",
+        barang: JSON.stringify(barangList),
+        total: totalSpan.textContent
+      };
+      const btn = document.getElementById("btnSubmit");
+      btn.disabled = true;
+      btn.textContent = "Mengirim...";
+      await fetch(SCRIPT_URL, { method:"POST", body:new URLSearchParams(data) });
+      document.getElementById("toast").classList.remove("hidden");
+      setTimeout(()=>document.getElementById("toast").classList.add("hidden"),3000);
+      btn.disabled = false;
+      btn.textContent = "Kirim";
+      barangList = [];
+      renderBarang();
+    };
+  </script>
+</body>
+</html>
