@@ -1,49 +1,195 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Form Kirim ke Google Sheet</title>
-  <style>
-    body { font-family: Arial, sans-serif; padding: 20px; }
-    form { max-width: 400px; margin: auto; }
-    input, textarea, button { width: 100%; margin: 8px 0; padding: 8px; }
-    button { background: #007bff; color: #fff; border: none; cursor: pointer; }
-    button:disabled { opacity: 0.6; }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Form Transaksi</title>
+<style>
+  body {
+    font-family: "Segoe UI", sans-serif;
+    background: #f7f9fb;
+    margin: 0; padding: 0;
+  }
+  header {
+    background: #1976d2; color: white;
+    text-align: center; padding: 1rem;
+    font-size: 1.2rem;
+  }
+  main {
+    max-width: 800px; margin: 1rem auto; padding: 1rem;
+    background: white; border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0,0,0,.1);
+  }
+  .hidden { display: none; }
+  table { width:100%; border-collapse: collapse; margin-top: .5rem; }
+  th, td { border: 1px solid #ddd; padding: 6px; text-align: left; }
+  th { background: #f0f0f0; }
+  input, select {
+    width: 100%; padding: .4rem; box-sizing: border-box;
+  }
+  button {
+    background: #1976d2; color: white; border: none;
+    padding: .6rem 1rem; border-radius: 6px; cursor: pointer;
+  }
+  button:hover { opacity: .9; }
+  #toast {
+    position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+    background: #323232; color: white; padding: 10px 20px;
+    border-radius: 6px; opacity: 0; transition: opacity .3s;
+  }
+  #toast.show { opacity: 1; }
+  #loading {
+    position: fixed; top:0; left:0; width:100%; height:100%;
+    background: rgba(255,255,255,.6); display: flex; align-items:center; justify-content:center;
+    font-size:1.2rem; color:#1976d2; display:none;
+  }
+  @media(max-width:600px){ main{margin:.5rem;} }
+</style>
 </head>
 <body>
 
-  <h2>Form Kirim ke Google Sheet</h2>
-  <form id="form">
-    <input type="text" name="nama" placeholder="Nama" required>
-    <input type="email" name="email" placeholder="Email" required>
-    <textarea name="pesan" placeholder="Pesan" required></textarea>
-    <button type="submit">Kirim</button>
+<header>📦 Form Transaksi</header>
+
+<main id="menuPage">
+  <h3>Pilih Jenis Transaksi</h3>
+  <button onclick="openForm('masuk')">Transaksi Masuk</button>
+  <button onclick="openForm('keluar')" style="background:#43a047">Transaksi Keluar</button>
+</main>
+
+<main id="formPage" class="hidden">
+  <button onclick="goBack()">⬅ Kembali</button>
+  <h3 id="formTitle">Transaksi</h3>
+
+  <form id="trxForm">
+    <label>Total (Rp)</label>
+    <input type="text" id="total" placeholder="0" required>
+
+    <label>Metode Pembayaran</label>
+    <select id="metode" onchange="toggleTransfer()">
+      <option value="Tunai">Tunai</option>
+      <option value="Transfer">Transfer</option>
+    </select>
+
+    <div id="transferInfo" class="hidden">
+      <label>Nama Bank</label><input id="bank" />
+      <label>Atas Nama</label><input id="atasNama" />
+      <label>No Rekening</label><input id="norek" />
+    </div>
+
+    <div id="pihakSection"></div>
+
+    <h4>Daftar Barang</h4>
+    <table id="barangTable">
+      <thead><tr><th>Nama</th><th>Jumlah</th><th>Satuan</th><th>Harga</th><th>Diskon%</th><th>Total</th><th></th></tr></thead>
+      <tbody></tbody>
+    </table>
+    <button type="button" onclick="addBarang()">Tambah Barang</button><br><br>
+
+    <button type="submit">Kirim Data</button>
   </form>
+</main>
 
-  <p id="status"></p>
+<div id="loading">Mengirim data...</div>
+<div id="toast"></div>
 
-  <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzse_68vIKalKsWzE5fYyPzPCNm8mQ0gNEwzc0m7OW2O1BYOplkBOpoNmXVFbe78UY/exec"; // ← ganti dengan URL Apps Script kamu
+<script>
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzse_68vIKalKsWzE5fYyPzPCNm8mQ0gNEwzc0m7OW2O1BYOplkBOpoNmXVFbe78UY/exec";
+let trxType = '';
 
-    document.getElementById('form').addEventListener('submit', async e => {
-      e.preventDefault();
-      const form = e.target;
-      const data = new FormData(form);
-      document.querySelector('button').disabled = true;
-      document.getElementById('status').textContent = "Mengirim...";
+function openForm(type){
+  trxType = type;
+  document.getElementById('menuPage').classList.add('hidden');
+  document.getElementById('formPage').classList.remove('hidden');
+  document.getElementById('formTitle').innerText = type==='masuk'?'Transaksi Masuk':'Transaksi Keluar';
+  const pihak = document.getElementById('pihakSection');
+  pihak.innerHTML = type==='masuk'
+    ? `<label>Supplier</label><input id="pihakNama" required>
+       <label>Kontak Supplier</label><input id="pihakKontak">`
+    : `<label>Nama Pembeli</label><input id="pihakNama" required>
+       <label>Nomor Telepon</label><input id="pihakKontak">
+       <label>Kasir</label><input id="kasir">`;
+}
+function goBack(){
+  document.getElementById('formPage').classList.add('hidden');
+  document.getElementById('menuPage').classList.remove('hidden');
+}
+function toggleTransfer(){
+  document.getElementById('transferInfo').classList.toggle('hidden',
+    document.getElementById('metode').value!=='Transfer');
+}
+function addBarang(){
+  const tbody = document.querySelector('#barangTable tbody');
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td><input class="nama"></td>
+    <td><input class="jumlah" type="number" value="1"></td>
+    <td>
+      <select class="satuan">
+        <option>pcs</option><option>pak</option><option>dus</option>
+        <option>kg</option><option>liter</option><option>botol</option>
+      </select>
+    </td>
+    <td><input class="harga" type="number"></td>
+    <td><input class="diskon" type="number" value="0"></td>
+    <td class="total">0</td>
+    <td><button type="button" onclick="this.closest('tr').remove()">🗑</button></td>
+  `;
+  tbody.appendChild(tr);
+  tr.querySelectorAll('.jumlah,.harga,.diskon').forEach(inp=>inp.addEventListener('input',()=>calcRow(tr)));
+}
+function calcRow(tr){
+  const j = parseFloat(tr.querySelector('.jumlah').value||0);
+  const h = parseFloat(tr.querySelector('.harga').value||0);
+  const d = parseFloat(tr.querySelector('.diskon').value||0);
+  const total = j*h*(1-d/100);
+  tr.querySelector('.total').innerText = total.toLocaleString('id-ID');
+}
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.innerText=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3000);
+}
 
-      try {
-        await fetch(SCRIPT_URL, { method: 'POST', body: data });
-        document.getElementById('status').textContent = "✅ Data berhasil dikirim!";
-        form.reset();
-      } catch (err) {
-        document.getElementById('status').textContent = "❌ Gagal mengirim data!";
-      } finally {
-        document.querySelector('button').disabled = false;
-      }
+document.getElementById('trxForm').addEventListener('submit', async e=>{
+  e.preventDefault();
+  document.getElementById('loading').style.display='flex';
+  const rows=[...document.querySelectorAll('#barangTable tbody tr')].map(r=>({
+    nama:r.querySelector('.nama').value,
+    jumlah:r.querySelector('.jumlah').value,
+    satuan:r.querySelector('.satuan').value,
+    harga:r.querySelector('.harga').value,
+    diskon:r.querySelector('.diskon').value,
+  }));
+  const payload={
+    type:trxType,
+    total:document.getElementById('total').value,
+    metode:document.getElementById('metode').value,
+    bank:document.getElementById('bank').value,
+    atasNama:document.getElementById('atasNama').value,
+    norek:document.getElementById('norek').value,
+    pihakNama:document.getElementById('pihakNama').value,
+    pihakKontak:document.getElementById('pihakKontak').value,
+    kasir:document.getElementById('kasir')?document.getElementById('kasir').value:'',
+    items:JSON.stringify(rows)
+  };
+  try{
+    const res = await fetch(SCRIPT_URL,{
+      method:'POST',
+      headers:{'Content-Type':'application/x-www-form-urlencoded'},
+      body:new URLSearchParams(payload)
     });
-  </script>
+    const txt=await res.text();
+    console.log(txt);
+    showToast('✅ Data berhasil dikirim!');
+    e.target.reset();
+    document.querySelector('#barangTable tbody').innerHTML='';
+  }catch(err){
+    console.error(err);
+    showToast('❌ Gagal mengirim data.');
+  }finally{
+    document.getElementById('loading').style.display='none';
+  }
+});
+</script>
 </body>
 </html>
