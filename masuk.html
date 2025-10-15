@@ -90,81 +90,122 @@
   <div id="toast" class="fixed bottom-4 right-4 hidden bg-green-600 text-white px-4 py-2 rounded-lg shadow-lg">Data berhasil dikirim!</div>
 
   <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzse_68vIKalKsWzE5fYyPzPCNm8mQ0gNEwzc0m7OW2O1BYOplkBOpoNmXVFbe78UY/exec";
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzse_68vIKalKsWzE5fYyPzPCNm8mQ0gNEwzc0m7OW2O1BYOplkBOpoNmXVFbe78UY/exec";
 
-    const metode = document.getElementById("metode");
-    const transferFields = document.getElementById("transferFields");
-    metode.addEventListener("change", () => {
-      transferFields.classList.toggle("hidden", metode.value !== "Transfer");
-    });
+const metode = document.getElementById("metode");
+const transferFields = document.getElementById("transferFields");
+metode.addEventListener("change", () => {
+  transferFields.classList.toggle("hidden", metode.value !== "Transfer");
+});
 
-    const tabel = document.getElementById("tabelBarang");
-    const totalSpan = document.getElementById("total");
-    let barangList = [];
-    let kodeUrut = 1;
+const tabel = document.getElementById("tabelBarang");
+const totalSpan = document.getElementById("total");
+let barangList = [];
+let kodeUrut = 1;
 
-    function renderBarang() {
-      tabel.innerHTML = "";
-      let total = 0;
-      barangList.forEach(b => {
-        total += b.subtotal;
-        const row = `<tr>
-          <td class='border p-1 text-center'>${b.kode}</td>
-          <td class='border p-1'>${b.nama}</td>
-          <td class='border p-1 text-center'>${b.jumlah}</td>
-          <td class='border p-1 text-center'>${b.satuan}</td>
-          <td class='border p-1 text-right'>${b.harga.toLocaleString()}</td>
-          <td class='border p-1 text-center'>${b.diskon}</td>
-          <td class='border p-1 text-right'>${b.subtotal.toLocaleString()}</td>
-        </tr>`;
-        tabel.insertAdjacentHTML("beforeend", row);
-      });
-      totalSpan.textContent = total.toLocaleString();
-    }
+// --- fungsi render tabel
+function renderBarang() {
+  tabel.innerHTML = "";
+  let total = 0;
+  barangList.forEach(b => {
+    total += b.subtotal;
+    const row = `<tr>
+      <td class='border p-1 text-center'>${b.kode}</td>
+      <td class='border p-1'>${b.nama}</td>
+      <td class='border p-1 text-center'>${b.jumlah}</td>
+      <td class='border p-1 text-center'>${b.satuan}</td>
+      <td class='border p-1 text-right'>${b.harga.toLocaleString()}</td>
+      <td class='border p-1 text-center'>${b.diskon}</td>
+      <td class='border p-1 text-right'>${b.subtotal.toLocaleString()}</td>
+    </tr>`;
+    tabel.insertAdjacentHTML("beforeend", row);
+  });
+  totalSpan.textContent = total.toLocaleString();
+}
 
-    document.getElementById("btnTambah").onclick = () => {
-      document.getElementById("modal").classList.remove("hidden");
-    };
-    document.getElementById("batal").onclick = () => {
-      document.getElementById("modal").classList.add("hidden");
-    };
-    document.getElementById("simpanBarang").onclick = () => {
-      const nama = namaBarang.value.trim();
-      const jumlah = +document.getElementById("jumlah").value || 0;
-      const satuan = satuan.value.trim();
-      const harga = +document.getElementById("harga").value || 0;
-      const diskon = +document.getElementById("diskon").value || 0;
-      const subtotal = Math.round(jumlah * harga * (1 - diskon/100));
-      if(!nama || jumlah<=0) return alert("Lengkapi data barang!");
-      barangList.push({kode:`BRG${String(kodeUrut++).padStart(3,"0")}`, nama, jumlah, satuan, harga, diskon, subtotal});
-      renderBarang();
-      document.getElementById("modal").classList.add("hidden");
-    };
+// --- tombol tambah barang
+document.getElementById("btnTambah").onclick = () => {
+  document.getElementById("modal").classList.remove("hidden");
+};
 
-    document.getElementById("btnSubmit").onclick = async () => {
-      if(barangList.length === 0) return alert("Tambahkan minimal 1 barang!");
-      const data = {
-        sheet: "Masuk",
-        supplier: supplier.value,
-        kontak: kontak.value,
-        metode: metode.value,
-        bank: bank.value || "",
-        atasNama: atasNama.value || "",
-        rekening: rekening.value || "",
-        barang: JSON.stringify(barangList),
-        total: totalSpan.textContent
-      };
-      const btn = document.getElementById("btnSubmit");
-      btn.disabled = true;
-      btn.textContent = "Mengirim...";
-      await fetch(SCRIPT_URL, { method:"POST", body:new URLSearchParams(data) });
+// --- tombol batal
+document.getElementById("batal").onclick = () => {
+  document.getElementById("modal").classList.add("hidden");
+};
+
+// --- tombol simpan barang
+document.getElementById("simpanBarang").onclick = () => {
+  const nama = document.getElementById("namaBarang").value.trim();
+  const jumlahVal = document.getElementById("jumlah").value;
+  const satuanVal = document.getElementById("satuan").value.trim();
+  const hargaVal = document.getElementById("harga").value;
+  const diskonVal = document.getElementById("diskon").value;
+
+  const jumlah = parseFloat(jumlahVal) || 0;
+  const harga = parseFloat(hargaVal) || 0;
+  const diskon = parseFloat(diskonVal) || 0;
+
+  if (!nama || jumlah <= 0) {
+    alert("Lengkapi data barang!");
+    return;
+  }
+
+  const subtotal = Math.round(jumlah * harga * (1 - diskon / 100));
+  const kode = `BRG${String(kodeUrut++).padStart(3, "0")}`;
+
+  barangList.push({ kode, nama, jumlah, satuan: satuanVal, harga, diskon, subtotal });
+  renderBarang();
+
+  // tutup modal & reset input
+  document.getElementById("modal").classList.add("hidden");
+  document.getElementById("namaBarang").value = "";
+  document.getElementById("jumlah").value = "";
+  document.getElementById("satuan").value = "";
+  document.getElementById("harga").value = "";
+  document.getElementById("diskon").value = "";
+};
+
+// --- tombol kirim ke Google Sheet
+document.getElementById("btnSubmit").onclick = async () => {
+  if (barangList.length === 0) {
+    alert("Tambahkan minimal 1 barang!");
+    return;
+  }
+
+  const data = {
+    sheet: "Masuk",
+    supplier: document.getElementById("supplier").value,
+    kontak: document.getElementById("kontak").value,
+    metode: metode.value,
+    bank: document.getElementById("bank").value || "",
+    atasNama: document.getElementById("atasNama").value || "",
+    rekening: document.getElementById("rekening").value || "",
+    barang: JSON.stringify(barangList),
+    total: totalSpan.textContent
+  };
+
+  const btn = document.getElementById("btnSubmit");
+  btn.disabled = true;
+  btn.textContent = "Mengirim...";
+
+  try {
+    const res = await fetch(SCRIPT_URL, { method: "POST", body: new URLSearchParams(data) });
+    if (res.ok) {
       document.getElementById("toast").classList.remove("hidden");
-      setTimeout(()=>document.getElementById("toast").classList.add("hidden"),3000);
-      btn.disabled = false;
-      btn.textContent = "Kirim";
+      setTimeout(() => document.getElementById("toast").classList.add("hidden"), 3000);
       barangList = [];
       renderBarang();
-    };
-  </script>
+    } else {
+      alert("Gagal mengirim data!");
+    }
+  } catch (err) {
+    alert("Koneksi gagal: " + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "Kirim";
+  }
+};
+</script>
+
 </body>
 </html>
